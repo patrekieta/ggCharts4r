@@ -83,30 +83,30 @@ We could also change the lines to make them `smooth`.
 
 ```{r}
 df |> 
-  e_charts(State) |> # initialise and set x
-  e_line(Population, smooth = TRUE) |>  # add a line
-  e_area(Income, smooth = TRUE) # add area
+  e_charts(Date) |> # initialise and set x
+  e_line(Temp, smooth = TRUE) |>  # add a line
+  e_area(Wind, smooth = TRUE) # add area
 ```
 
-Lets label the axes with the convenience function `e_axis_labels`.
+Lets label the X axis with the convenience function `e_axis_labels`.
 
 ```{r}
 df |> 
-  e_charts(State) |> # initialise and set x
-  e_line(Population, smooth = TRUE) |>  # add a line
-  e_area(Income, smooth = TRUE) |>  # add area
-  e_axis_labels(x = "State") # axis labels
+  e_charts(Date) |> # initialise and set x
+  e_line(Temp, smooth = TRUE) |>  # add a line
+  e_area(Wind, smooth = TRUE) |> # add area
+  e_axis_labels(x = "1973.") # axis label
 ```
 
-We can use one of the 13 built-in themes, see `?e_theme` for a complete list, we'll also add a title with `e_title`.
+We can use one of the 13 built-in themes to style the chart, see `?e_theme` for a complete list. We'll also add a title with `e_title`.
 
 ```{r}
 df |> 
-  e_charts(State) |> # initialise and set x
-  e_line(Population, smooth = TRUE) |>  # add a line
-  e_area(Income, smooth = TRUE) |>  # add area
-  e_axis_labels(x = "State") |> # axis labels
-  e_title("US States", "Population & Income") |>  # Add title & subtitle
+  e_charts(Date) |> # initialise and set x
+  e_line(Temp, smooth = TRUE) |>  # add a line
+  e_area(Wind, smooth = TRUE) |> # add area
+  e_axis_labels(x = "1973.") |> # axis label
+  e_title("New York Air Quality Data", "Maximum daily temperature and mean wind speed") |>  # Add title & subtitle
   e_theme("infographic") # theme
 ```
 
@@ -114,42 +114,42 @@ The legend and title are a bit close, let's move the legend to another part the 
 
 ```{r}
 df |> 
-  e_charts(State) |> # initialise and set x
-  e_line(Population, smooth = TRUE) |>  # add a line
-  e_area(Income, smooth = TRUE) |>  # add area
-  e_axis_labels(x = "State") |> # axis labels
-  e_title("US States", "Population & Income") |>  # Add title & subtitle
+  e_charts(Date) |> # initialise and set x
+  e_line(Temp, smooth = TRUE) |>  # add a line
+  e_area(Wind, smooth = TRUE) |> # add area
+  e_axis_labels(x = "1973.") |> # axis label
+  e_title("New York Air Quality Data", "Maximum daily temperature and mean wind speed") |>  # Add title & subtitle
   e_theme("infographic") |>  # theme
-  e_legend(right = 0) # move legend to the bottom
+  e_legend(right = 0) # move legend to the top right corner
 ```
 
-Add a tooltip, of which there are numerous [options](https://echarts.apache.org/en/option.html#tooltip), here we use `trigger = "axis"` to trigger the tooltip by the axis rather than a single data point.
+Add a tooltip, of which there are numerous [options](https://echarts.apache.org/en/option.html#tooltip). Here, we use `trigger = "axis"` to trigger the tooltip across the whole y axis for a given day, rather than on individual data points.
 
 ```{r}
 df |> 
-  e_charts(State) |> # initialise and set x
-  e_line(Population, smooth = TRUE) |>  # add a line
-  e_area(Income, smooth = TRUE) |>  # add area
-  e_axis_labels(x = "State") |> # axis labels
-  e_title("US States", "Population & Income") |>  # Add title & subtitle
+  e_charts(Date) |> # initialise and set x
+  e_line(Temp, smooth = TRUE) |>  # add a line
+  e_area(Wind, smooth = TRUE) |> # add area
+  e_axis_labels(x = "1973.") |> # axis label
+  e_title("New York Air Quality Data", "Maximum daily temperature and mean wind speed") |>  # Add title & subtitle
   e_theme("infographic") |>  # theme
-  e_legend(right = 0) |>  # move legend to the bottom
+  e_legend(right = 0) |> # move legend to the top right corner
   e_tooltip(trigger = "axis") # tooltip
 ```
 
-Finally, we are currently plotting population and income on the same axis, let's put them each on their respective y axis by specifying an extra axis for Income.
+Finally, we are currently plotting temperature and wind speed on the same axis, let's put them each on their respective y axis by specifying an extra axis for Wind.
 
-<span class="label label-warning"><i class="fa fa-warning"></i></span> Dual y axes is a terrible idea, it's only here for demonstration purposes.
+<span class="label label-warning"><i class="fa fa-warning"></i></span> Dual y axes are not considered good data visualisation practice, they are only here for demonstration purposes.
 
 ```{r}
 df |> 
-  e_charts(State) |> # initialise and set x
-  e_line(Population, smooth = TRUE) |>  # add a line
-  e_area(Income, smooth = TRUE, y_index = 1) |>  # add area
-  e_axis_labels(x = "State") |> # axis labels
-  e_title("US States", "Population & Income") |>  # Add title & subtitle
+  e_charts(Date) |> # initialise and set x
+  e_line(Temp, smooth = TRUE) |>  # add a line
+  e_area(Wind, smooth = TRUE, y_index = 1) |> # add area
+  e_axis_labels(x = "1973.") |> # axis label
+  e_title("New York Air Quality Data", "Maximum daily temperature and mean wind speed") |>  # Add title & subtitle
   e_theme("infographic") |>  # theme
-  e_legend(right = 0) |>  # move legend to the bottom
+  e_legend(right = 0) |> # move legend to the top right corner
   e_tooltip(trigger = "axis") # tooltip
 ```
 
