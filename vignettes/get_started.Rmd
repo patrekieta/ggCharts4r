@@ -38,38 +38,43 @@ Thanks to [Sharon Machlis](https://twitter.com/sharon000) there is an amazing vi
 
 ## Your first plot
 
-Let's build a line chart, load the library and pipe your data to `e_charts`. If you are not at ease with the `|>` you can use `e_charts(mtcars, wt)`.
+Let's build a line chart. First, we'll prepare the data, load the library and pipe the data to `e_charts`.
 
 ```{r}
 # prepare data
-df <- state.x77 |> 
-  as.data.frame() |> 
-  tibble::rownames_to_column("State")
+df <- airquality
+
+# pad month/day with leading zero and convert to date
+df$Month <- sprintf("%02d", df$Month)
+df$Day <- sprintf("%02d", df$Day)
+
+df$Date <- paste("1973", df$Month, df$Day, sep = "-") |> 
+  as.Date(format = "%Y-%m-%d")
 ```
 
 ```{r}
 library(echarts4r) # load echarts4r
 
 df |> 
-  e_charts(x = State) |> # initialise and set x
-  e_line(serie = Population) # add a line
+  e_charts(x = Date) |> # initialise and set x
+  e_line(serie = Temp) # add a line
 ```
 
-If you are not at ease with bare column names you can use the escape hatches ending in `_`.
+If you wish to use column names as quoted strings you can use the escape hatches with functions ending in `_`.
 
 ```{r, eval = FALSE}
 df |> 
-  e_charts_("State") |> 
-  e_line_("Population")
+  e_charts_("Date") |> 
+  e_line_("Temp")
 ```
 
-The easiest way is to use the `|>` operator to add plots and options.
+The easiest way to build your charts is to use the `|>` pipe operator to add plots, elements and options. Notice that the charts are interactable without any specific code additions. Try expanding the average wind speed view by clicking on *Temp* in the legend to disable the temperature line.
 
 ```{r}
 df |> 
-  e_charts(State) |> # initialise and set x
-  e_line(Population) |>  # add a line
-  e_area(Income) # add area
+  e_charts(Date) |> 
+  e_line(Temp) |>  # add a line
+  e_area(Wind) # add area
 ```
 
 ## Options
@@ -78,30 +83,30 @@ We could also change the lines to make them `smooth`.
 
 ```{r}
 df |> 
-  e_charts(State) |> # initialise and set x
-  e_line(Population, smooth = TRUE) |>  # add a line
-  e_area(Income, smooth = TRUE) # add area
+  e_charts(Date) |> # initialise and set x
+  e_line(Temp, smooth = TRUE) |>  # add a line
+  e_area(Wind, smooth = TRUE) # add area
 ```
 
-Lets label the axes with the convenience function `e_axis_labels`.
+Lets label the X axis with the convenience function `e_axis_labels`.
 
 ```{r}
 df |> 
-  e_charts(State) |> # initialise and set x
-  e_line(Population, smooth = TRUE) |>  # add a line
-  e_area(Income, smooth = TRUE) |>  # add area
-  e_axis_labels(x = "State") # axis labels
+  e_charts(Date) |> # initialise and set x
+  e_line(Temp, smooth = TRUE) |>  # add a line
+  e_area(Wind, smooth = TRUE) |> # add area
+  e_axis_labels(x = "1973.") # axis label
 ```
 
-We can use one of the 13 built-in themes, see `?e_theme` for a complete list, we'll also add a title with `e_title`.
+We can use one of the 13 built-in themes to style the chart, see `?e_theme` for a complete list. We'll also add a title with `e_title`.
 
 ```{r}
 df |> 
-  e_charts(State) |> # initialise and set x
-  e_line(Population, smooth = TRUE) |>  # add a line
-  e_area(Income, smooth = TRUE) |>  # add area
-  e_axis_labels(x = "State") |> # axis labels
-  e_title("US States", "Population & Income") |>  # Add title & subtitle
+  e_charts(Date) |> # initialise and set x
+  e_line(Temp, smooth = TRUE) |>  # add a line
+  e_area(Wind, smooth = TRUE) |> # add area
+  e_axis_labels(x = "1973.") |> # axis label
+  e_title("New York Air Quality Data", "Maximum daily temperature and mean wind speed") |>  # Add title & subtitle
   e_theme("infographic") # theme
 ```
 
@@ -109,48 +114,48 @@ The legend and title are a bit close, let's move the legend to another part the 
 
 ```{r}
 df |> 
-  e_charts(State) |> # initialise and set x
-  e_line(Population, smooth = TRUE) |>  # add a line
-  e_area(Income, smooth = TRUE) |>  # add area
-  e_axis_labels(x = "State") |> # axis labels
-  e_title("US States", "Population & Income") |>  # Add title & subtitle
+  e_charts(Date) |> # initialise and set x
+  e_line(Temp, smooth = TRUE) |>  # add a line
+  e_area(Wind, smooth = TRUE) |> # add area
+  e_axis_labels(x = "1973.") |> # axis label
+  e_title("New York Air Quality Data", "Maximum daily temperature and mean wind speed") |>  # Add title & subtitle
   e_theme("infographic") |>  # theme
-  e_legend(right = 0) # move legend to the bottom
+  e_legend(right = 0) # move legend to the top right corner
 ```
 
-Add a tooltip, of which there are numerous [options](https://echarts.apache.org/en/option.html#tooltip), here we use `trigger = "axis"` to trigger the tooltip by the axis rather than a single data point.
+Add a tooltip, of which there are numerous [options](https://echarts.apache.org/en/option.html#tooltip). Here, we use `trigger = "axis"` to trigger the tooltip across the whole y axis for a given day, rather than on individual data points.
 
 ```{r}
 df |> 
-  e_charts(State) |> # initialise and set x
-  e_line(Population, smooth = TRUE) |>  # add a line
-  e_area(Income, smooth = TRUE) |>  # add area
-  e_axis_labels(x = "State") |> # axis labels
-  e_title("US States", "Population & Income") |>  # Add title & subtitle
+  e_charts(Date) |> # initialise and set x
+  e_line(Temp, smooth = TRUE) |>  # add a line
+  e_area(Wind, smooth = TRUE) |> # add area
+  e_axis_labels(x = "1973.") |> # axis label
+  e_title("New York Air Quality Data", "Maximum daily temperature and mean wind speed") |>  # Add title & subtitle
   e_theme("infographic") |>  # theme
-  e_legend(right = 0) |>  # move legend to the bottom
+  e_legend(right = 0) |> # move legend to the top right corner
   e_tooltip(trigger = "axis") # tooltip
 ```
 
-Finally, we are currently plotting population and income on the same axis, let's put them each on their respective y axis by specifying an extra axis for Income.
+Finally, we are currently plotting temperature and wind speed on the same axis, let's put them each on their respective y axis by specifying an extra axis for Wind.
 
-<span class="label label-warning"><i class="fa fa-warning"></i></span> Dual y axes is a terrible idea, it's only here for demonstration purposes.
+<span class="label label-warning"><i class="fa fa-warning"></i></span> Dual y axes are not considered good data visualisation practice, they are only here for demonstration purposes.
 
 ```{r}
 df |> 
-  e_charts(State) |> # initialise and set x
-  e_line(Population, smooth = TRUE) |>  # add a line
-  e_area(Income, smooth = TRUE, y_index = 1) |>  # add area
-  e_axis_labels(x = "State") |> # axis labels
-  e_title("US States", "Population & Income") |>  # Add title & subtitle
+  e_charts(Date) |> # initialise and set x
+  e_line(Temp, smooth = TRUE) |>  # add a line
+  e_area(Wind, smooth = TRUE, y_index = 1) |> # add area
+  e_axis_labels(x = "1973.") |> # axis label
+  e_title("New York Air Quality Data", "Maximum daily temperature and mean wind speed") |>  # Add title & subtitle
   e_theme("infographic") |>  # theme
-  e_legend(right = 0) |>  # move legend to the bottom
+  e_legend(right = 0) |> # move legend to the top right corner
   e_tooltip(trigger = "axis") # tooltip
 ```
 
 ## Navigate options
 
-`echarts4r` is highly customisable, there are too many options to have them all hard-coded in the package but rest assured; they are available, and can be passe to `...`. You will find all these options in the [official documentation](https://echarts.apache.org/en/option.html).
+`echarts4r` is highly customisable. There are too many options to have them all hard-coded in the package but rest assured; they are available, and can be passed to `...`. You will find all these options in the [official documentation](https://echarts.apache.org/en/option.html).
 
 <a href="https://echarts.apache.org/en/option.html" class="btn btn-default" target="_blank">
   <i class="fa fa-book"></i>
@@ -163,24 +168,26 @@ For instance the documentation for the tooltip looks like this:
   <img src="https://echarts4r.john-coene.com/articles/docs.png" class="img-responsive responsive-img" />
 </a>
 
-Therefore if we want to change our tooltip to an [axisPointer](https://echarts.apache.org/en/option.html#tooltip.axisPointer) we can do so by passing a list to `axisPointer`.
+Therefore if we want to change our tooltip to an [axisPointer](https://echarts.apache.org/en/option.html#tooltip.axisPointer) we can do so by passing a list to `axisPointer`.   
+If an option takes a single value, we don't need to wrap it in a list. For example, we can try changing the tooltip [backgroundColor](https://echarts.apache.org/en/option.html#tooltip.backgroundColor).
 
 ```{r}
 df |> 
-  e_charts(State) |> # initialise and set x
-  e_line(Population, smooth = TRUE) |>  # add a line
-  e_area(Income, smooth = TRUE) |>  # add area
-  e_x_axis(name = "States") |>  # add x axis name
-  e_title("US States", "Population & Income") |>  # Add title & subtitle
+  e_charts(Date) |> # initialise and set x
+  e_line(Temp, smooth = TRUE) |>  # add a line
+  e_area(Wind, smooth = TRUE) |> # add area
+  e_axis_labels(x = "1973.") |> # axis label
+  e_title("New York Air Quality Data", "Maximum daily temperature and mean wind speed") |>  # Add title & subtitle
   e_theme("infographic") |>  # theme
   e_legend(right = 0) |> # move legend to the bottom
   e_tooltip(
     axisPointer = list(
       type = "cross"
-    )
+    ),
+    backgroundColor = "#FFFFFF" # hex code for white color
   ) 
 ```
 
 Once you come to the realisation that JSON ~= `list` in R, it's pretty easy.
 
-You're in on the basics, go to the [advanced](https://echarts4r.john-coene.com/articles/advanced.html) section or navigate the site to discover how add multiple linked graphs, draw on globes, use the package in shiny, and more.
+You're caught up on the basics, go to the [advanced](https://echarts4r.john-coene.com/articles/advanced.html) section or navigate the site to discover how to add multiple linked graphs, draw on globes, use the package in shiny, and more.
