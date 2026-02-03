@@ -89,7 +89,7 @@ e_geo_3d_ <- function(e, serie = NULL, color = NULL, type = "world", rm_x = TRUE
     e$x$opts$baseOption$geo3D <- series
   }
 
-  path <- system.file("htmlwidgets/lib/echarts-4.8.0", package = "echarts4r")
+  path <- system.file("htmlwidgets/lib/echarts-6.0.0", package = "echarts4r")
   dep <- htmltools::htmlDependency(
     name = "echarts-gl",
     version = "1.1.2",
@@ -101,7 +101,7 @@ e_geo_3d_ <- function(e, serie = NULL, color = NULL, type = "world", rm_x = TRUE
 
   if (type == "world") {
     # add dependency
-    path <- system.file("htmlwidgets/lib/echarts-4.8.0", package = "echarts4r")
+    path <- system.file("htmlwidgets/lib/echarts-6.0.0", package = "echarts4r")
     dep <- htmltools::htmlDependency(
       name = "echarts-world",
       version = "1.0.0",
@@ -124,13 +124,6 @@ e_geo_3d_ <- function(e, serie = NULL, color = NULL, type = "world", rm_x = TRUE
 #' @param rm_x,rm_y Whether to remove x and y axis, defaults to \code{TRUE}.
 #'
 #' @examples
-#' flights <- read.csv(
-#'   paste0(
-#'     "https://raw.githubusercontent.com/plotly/datasets/",
-#'     "master/2011_february_aa_flight_paths.csv"
-#'   )
-#' )
-#'
 #' flights |>
 #'   e_charts() |>
 #'   e_geo() |>
@@ -162,7 +155,7 @@ e_geo <- function(e, map = "world", ..., rm_x = TRUE, rm_y = TRUE) {
 
   if (map == "world") {
     # add dependency
-    path <- system.file("htmlwidgets/lib/echarts-4.8.0", package = "echarts4r")
+    path <- system.file("htmlwidgets/lib/echarts-6.0.0", package = "echarts4r")
     dep <- htmltools::htmlDependency(
       name = "echarts-world",
       version = "1.0.0",

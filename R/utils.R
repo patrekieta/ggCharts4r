@@ -1,4 +1,4 @@
-globalVariables(c("x", "e", ".", "acc", "epoch", "loss", "size", "val_acc", "val_loss"))
+globalVariables(c("x", "e", ".", ".data", "acc", "epoch", "loss", "size", "val_acc", "val_loss", "flights", "airports", "buildings_sample", "buildings_sample_json", "population"))
 
 .arrange_data_x <- function(data, x, reorder = TRUE) {
   vect <- data[[x]]
@@ -15,7 +15,7 @@ globalVariables(c("x", "e", ".", "acc", "epoch", "loss", "size", "val_acc", "val
 .arrange_data_by_group <- function(data, x, reorder = TRUE) {
   vect <- data[[1]][[x]]
 
-  for (i in 1:length(data)) {
+  for (i in seq_along(data)) {
     if (reorder) {
       if (any(c(inherits(vect, "numeric"), inherits(vect, "integer")))) {
         data[[i]] <- data[[i]][order(data[[i]][[x]]), ]
@@ -99,7 +99,7 @@ globalVariables(c("x", "e", ".", "acc", "epoch", "loss", "size", "val_acc", "val
   }
 
   data <- data |>
-    dplyr::select(x = x, y = y, size, "sizeECHARTS") |>
+    dplyr::select(dplyr::all_of(c(x = x, y = y, size, "sizeECHARTS"))) |>
     dplyr::mutate(
       x = .jitter(x, factor, amount),
       y = .jitter(y, factor, amount)
@@ -116,7 +116,7 @@ globalVariables(c("x", "e", ".", "acc", "epoch", "loss", "size", "val_acc", "val
   row.names(data) <- NULL
 
   data <- data |>
-    dplyr::select(x = x, y = y) |>
+    dplyr::select(dplyr::all_of(c(x = {{x}}, y = {{y}}))) |>
     dplyr::mutate(
       x = .jitter(x, factor, amount),
       y = .jitter(y, factor, amount)
@@ -142,48 +142,49 @@ globalVariables(c("x", "e", ".", "acc", "epoch", "loss", "size", "val_acc", "val
 }
 
 .add_bind2 <- function(e, l, bind, col = "name", i) {
-  e$x$data[[i]] |>
-    dplyr::select(bind) |>
+  bind <- e$x$data[[i]] |>
+    dplyr::select(dplyr::all_of(bind)) |>
     unname() |>
-    unlist() -> bind
+    unlist()
 
-  for (i in 1:length(l)) {
+  for (i in seq_along(l)) {
     l[[i]][[col]] <- bind[i]
   }
   l
 }
 
 .add_bind <- function(e, l, bind, col = "name") {
-  e$x$data[[1]] |>
-    dplyr::select(bind) |>
+  bind <- e$x$data[[1]] |>
+    dplyr::select(dplyr::all_of(bind)) |>
     unname() |>
-    unlist() -> bind
+    unlist()
 
-  for (i in 1:length(l)) {
+  for (i in seq_along(l)) {
     l[[i]][[col]] <- bind[i]
   }
   l
 }
 
-.build_data_p <- function(data, ..., vector = FALSE, scale = NULL, symbol_size = 1) {
-  data |>
-    dplyr::select(...) |>
-    purrr::set_names(NULL) -> data
-
-  if (!is.null(scale)) {
-    data[[4]] <- scale(data[[3]]) * symbol_size
-  } else {
-    data[[4]] <- data[[3]]
-  }
-
-  if (isTRUE(vector)) {
-    unlist(data)
-  } else {
-    apply(data, 1, function(x) {
-      list(value = unlist(x, use.names = FALSE))
-    })
-  }
-}
+# Not being used
+# .build_data_p <- function(data, ..., vector = FALSE, scale = NULL, symbol_size = 1) {
+#   data <- data |>
+#     dplyr::select(...) |>
+#     purrr::set_names(NULL)
+#
+#   if (!is.null(scale)) {
+#     data[[4]] <- scale(data[[3]]) * symbol_size
+#   } else {
+#     data[[4]] <- data[[3]]
+#   }
+#
+#   if (isTRUE(vector)) {
+#     unlist(data)
+#   } else {
+#     apply(data, 1, function(x) {
+#       list(value = unlist(x, use.names = FALSE))
+#     })
+#   }
+# }
 
 .build_sankey_nodes <- function(data, source, target) {
   nodes <- c(
@@ -204,8 +205,8 @@ globalVariables(c("x", "e", ".", "acc", "epoch", "loss", "size", "val_acc", "val
 }
 
 .build_sankey_edges <- function(data, source, target, values) {
-  data |>
-    dplyr::select(source, target, values) -> edges
+  edges <- data |>
+    dplyr::select(dplyr::all_of(c(source, target, values)))
 
   names(edges) <- c("source", "target", "value")
 
@@ -217,13 +218,13 @@ globalVariables(c("x", "e", ".", "acc", "epoch", "loss", "size", "val_acc", "val
 
   data <- nodes |>
     dplyr::select(
-      name = !!names,
+      c(name = !!names,
       value = !!value,
       symbolSize = !!symbolSize,
       category = !!category,
       symbol = !!symbol,
       x = !!xpos,
-      y = !!ypos
+      y = !!ypos)
     )
 
   apply(data, 1, as.list)
@@ -234,11 +235,11 @@ globalVariables(c("x", "e", ".", "acc", "epoch", "loss", "size", "val_acc", "val
 
   data <- nodes |>
     dplyr::select(
-      name = !!names,
+      c(name = !!names,
       value = !!value,
       symbol = !!symbol,
       x = !!xpos,
-      y = !!ypos
+      y = !!ypos)
     )
 
   apply(data, 1, as.list)
@@ -249,12 +250,12 @@ globalVariables(c("x", "e", ".", "acc", "epoch", "loss", "size", "val_acc", "val
 
   data <- nodes |>
     dplyr::select(
-      name = !!names,
+      c(name = !!names,
       value = !!value,
       symbolSize = !!symbolSize,
       symbol = !!symbol,
       x = !!xpos,
-      y = !!ypos
+      y = !!ypos)
     )
 
   apply(data, 1, as.list)
@@ -263,24 +264,24 @@ globalVariables(c("x", "e", ".", "acc", "epoch", "loss", "size", "val_acc", "val
 .build_graph_edges <- function(edges, source, target, value, size, color) {
   row.names(edges) <- NULL
 
-  if (is.null(size) && is.null(color)) {
+  if (rlang::quo_is_null(size) && rlang::quo_is_null(color)) {
     data <- edges |>
       dplyr::select(
-        source = !!source,
+        c(source = !!source,
         target = !!target,
-        value = !!value
+        value = !!value)
       )
 
     x <- apply(data, 1, as.list)
   }
-  
-  if (!is.null(size) && is.null(color)) {
+
+  if (!rlang::quo_is_null(size) && rlang::quo_is_null(color)) {
     data <- edges |>
       dplyr::select(
-        source = !!source,
+        c(source = !!source,
         target = !!target,
         value = !!value,
-        size = !!size
+        size = !!size)
       )
 
     x <- apply(data, 1, function(x) {
@@ -288,7 +289,7 @@ globalVariables(c("x", "e", ".", "acc", "epoch", "loss", "size", "val_acc", "val
         source = unname(x["source"]),
         target = unname(x["target"]),
         value = {
-          if (is.null(value)) "" else unname(x["value"])
+          if (rlang::quo_is_null(value)) "" else unname(x["value"])
         },
         symbolSize = c(5, 20),
         lineStyle = list(width = unname(x["size"]))
@@ -296,13 +297,13 @@ globalVariables(c("x", "e", ".", "acc", "epoch", "loss", "size", "val_acc", "val
     })
   }
 
-  if (!is.null(color) && is.null(size)) {
+  if (!rlang::quo_is_null(color) && rlang::quo_is_null(size)) {
     data <- edges |>
       dplyr::select(
-        source = !!source,
+        c(source = !!source,
         target = !!target,
         value = !!value,
-        color = !!color
+        color = !!color)
       )
 
     x <- apply(data, 1, function(x) {
@@ -310,21 +311,21 @@ globalVariables(c("x", "e", ".", "acc", "epoch", "loss", "size", "val_acc", "val
         source = unname(x["source"]),
         target = unname(x["target"]),
         value = {
-          if (is.null(value)) "" else unname(x["value"])
+          if (rlang::quo_is_null(value)) "" else unname(x["value"])
         },
         lineStyle = list(color = unname(x["color"]))
       )
     })
   }
 
-  if (!is.null(size) && !is.null(color)) {
+  if (!rlang::quo_is_null(size) && !rlang::quo_is_null(color)) {
     data <- edges |>
       dplyr::select(
-        source = !!source,
+        c(source = !!source,
         target = !!target,
         value = !!value,
         size = !!size,
-        color = !!color
+        color = !!color)
       )
 
     x <- apply(data, 1, function(x) {
@@ -332,7 +333,7 @@ globalVariables(c("x", "e", ".", "acc", "epoch", "loss", "size", "val_acc", "val
         source = unname(x["source"]),
         target = unname(x["target"]),
         value = {
-          if (is.null(value)) "" else unname(x["value"])
+          if (rlang::quo_is_null(value)) "" else unname(x["value"])
         },
         symbolSize = c(5, 20),
         lineStyle = list(
@@ -347,13 +348,13 @@ globalVariables(c("x", "e", ".", "acc", "epoch", "loss", "size", "val_acc", "val
 }
 
 .build_graph_category <- function(nodes, cat) {
-  nodes |>
+  data <- nodes |>
     dplyr::select(
-      name = !!cat
+      c(name = !!cat)
     ) |>
-    unique() -> data
+    unique()
 
-  apply(data, 1, as.list) -> x
+  x <- apply(data, 1, as.list)
   names(x) <- NULL
   x
 }
@@ -469,11 +470,16 @@ globalVariables(c("x", "e", ".", "acc", "epoch", "loss", "size", "val_acc", "val
 }
 
 .build_river <- function(e, serie, label, i) {
+
+  if(is.null(e$x$mapping$x)){
+    stop("e$x$mapping$x is NULL")
+  }
+
   x <- .get_data(e, e$x$mapping$x, i)
   label <- rep(label, length(x))
 
-  e$x$data[[i]] |>
-    dplyr::select(serie) -> data
+  data <- e$x$data[[i]] |>
+    dplyr::select(dplyr::all_of(serie))
 
   data <- cbind(x, data, label)
   row.names(data) <- NULL
@@ -499,7 +505,7 @@ globalVariables(c("x", "e", ".", "acc", "epoch", "loss", "size", "val_acc", "val
 
 .get_data <- function(e, serie, i = 1) {
   data <- e$x$data[[i]] |>
-    dplyr::select(serie) |>
+    dplyr::select(dplyr::all_of(serie)) |>
     unname()
 
   data[[1]]
@@ -536,6 +542,11 @@ globalVariables(c("x", "e", ".", "acc", "epoch", "loss", "size", "val_acc", "val
 }
 
 .set_x_axis <- function(e, x_index, i) {
+
+  if(is.null(e$x$mapping$x)){
+    stop("e$x$mapping$x is NULL")
+  }
+
   .set_any_axis(e, e$x$mapping$x, x_index, axis = "x", i)
 }
 
@@ -580,12 +591,12 @@ globalVariables(c("x", "e", ".", "acc", "epoch", "loss", "size", "val_acc", "val
 
 .map_lines <- function(e, source.lon, source.lat, target.lon, target.lat, source.name, target.name, value, i) {
   data <- e$x$data[[i]] |>
-    dplyr::select(
-      source.lon,
+    dplyr::select(dplyr::all_of(
+      c(source.lon,
       source.lat,
       target.lon,
-      target.lat
-    ) |>
+      target.lat)
+    )) |>
     apply(1, function(x) {
       x <- unname(x)
       list(
@@ -608,11 +619,16 @@ globalVariables(c("x", "e", ".", "acc", "epoch", "loss", "size", "val_acc", "val
 }
 
 .build_cartesian3D <- function(e, ..., i = 1) {
-  e$x$data[[i]] |>
-    dplyr::select(
-      ...
-    ) |>
-    unname() -> df
+  # Don't use this bc it only selects unique cols.
+  # ... could be the same col.
+  # df <- e$x$data[[i]] |>
+  #   dplyr::select(
+  #     ...
+  #   ) |>
+  #   unname()
+  df <- e$x$data[[i]][, c(...), drop = FALSE]
+  row.names(df) <- NULL
+  df <- unname(df)
 
   apply(df, 1, function(x) {
     list(value = x)
@@ -622,20 +638,25 @@ globalVariables(c("x", "e", ".", "acc", "epoch", "loss", "size", "val_acc", "val
 
 .build_height <- function(e, serie, color, j) {
   # data <- .build_data(e, e$x$mapping$x, serie, names = c("name", "height"))
-  e$x$data[[j]] |>
-    dplyr::select(
-      name = e$x$mapping$x,
-      height = serie
-    ) -> data
+
+  if(is.null(e$x$mapping$x)){
+    stop("e$x$mapping$x is NULL")
+  }
+
+  data <- e$x$data[[j]] |>
+    dplyr::select(dplyr::all_of(
+      c(name = e$x$mapping$x,
+      height = serie)
+    ))
 
   names(data) <- c("name", "height")
 
-  apply(data, 1, as.list) -> l
+  l <- apply(data, 1, as.list)
 
   if (!missing(color)) {
     color <- .get_data(e, color)
 
-    for (i in 1:length(l)) {
+    for (i in seq_along(l)) {
       is <- list(
         color = color[i]
       )
@@ -696,6 +717,10 @@ globalVariables(c("x", "e", ".", "acc", "epoch", "loss", "size", "val_acc", "val
 .add_indicators <- function(e, r.index, max, radar = list()) {
   if (!length(e$x$opts$radar)) {
     e$x$opts$radar <- list(list())
+  }
+
+  if(is.null(e$x$mapping$x)){
+    stop("e$x$mapping$x is NULL")
   }
 
   x <- .get_data(e, e$x$mapping$x)
@@ -789,4 +814,114 @@ check_installed <- function(pkg) {
   if (!has_it) {
     stop(sprintf("This function requires the package {%s}", pkg), call. = FALSE)
   }
+}
+
+.build_zigzags <- function(data, starts, ends, gap) {
+  zigzags <- data |>
+    dplyr::select(dplyr::all_of(c(starts, ends, gap)))
+
+  names(zigzags) <- c("start", "end", "gap")
+
+  apply(zigzags, 1, as.list)
+}
+
+# Not used
+# .get_base_nodes <- function(x) {
+#   found_values <- list()
+#
+#   if (is.list(x) && !is.data.frame(x)) {
+#     current_names <- names(x)
+#
+#     for (i in seq_along(x)) {
+#       element <- x[[i]]
+#
+#       is_unnamed <- is.null(current_names) || current_names[i] == ""
+#
+#       is_atomic_data <- !is.list(element) || is.data.frame(element)
+#
+#       if (is_unnamed && is_atomic_data) {
+#         found_values <- c(found_values, list(element))
+#       }
+#
+#       found_values <- c(found_values, get_base_nodes(element))
+#     }
+#   }
+#   return(found_values)
+# }
+
+.get_bind <- function(bind){
+  if (bind == "") {
+    bd <- NULL
+  } else {
+    bd <- bind
+  }
+  return(bd)
+}
+
+.get_size <- function(size){
+  if (size == "") {
+    sz <- NULL
+  } else {
+    sz <- size
+  }
+  return(sz)
+}
+
+.actions_btn <- function(e, opts, btn){
+  if (!is.null(btn)) {
+    if (!btn %in% names(e$x$buttons)) {
+      e$x$buttons[[btn]] <- list(opts)
+    } else {
+      e$x$buttons[[btn]] <- append(e$x$buttons[[btn]], list(opts))
+    }
+  } else {
+    e$x$events <- append(e$x$events, list(opts))
+  }
+  return(e)
+}
+
+
+check_installed_installer <- function(pkg) {
+  has_it <- base::requireNamespace(pkg, quietly = TRUE)
+
+  if (!has_it) {
+    cat(paste("This function requires the package:", pkg, "\n"))
+    install_pkg(pkg)
+  }
+
+
+}
+
+
+install_pkg <- function(pkg) {
+  input <- 1L
+
+  if (interactive()) {
+    input <- utils::menu(
+      c("Yes", "No"),
+      title = paste("Install the", pkg, "package?")
+    )
+  }
+
+  if (input != 1L) {
+    cli::cli_abort(
+      paste0("The {.pkg ", pkg,"} package is necessary for that method.\n Please try installing the package yourself with {.code install.packages(\"",pkg,"\")}")
+    )
+  }
+
+  cli::cli_inform(paste0("Installing the {.pkg ", pkg,"} package."))
+
+  tryCatch(
+    utils::install.packages(pkg),
+    error = function(e) {
+      cli::cli_inform(conditionMessage(e))
+    }
+  )
+
+  tryCatch(
+    require(pkg, character.only = TRUE),
+    error = function(e) {
+      cli::cli_inform(conditionMessage(e))
+    }
+  )
 }

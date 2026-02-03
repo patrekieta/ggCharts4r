@@ -23,7 +23,7 @@ e_map_register_ui(name, json, async = FALSE)
 \arguments{
 \item{e}{An \code{echarts4r} object as returned by \code{\link{e_charts}}.}
 
-\item{name}{Name of map, to use in \code{\link{e_map}}.}
+\item{name}{Name of map, to used in \code{\link{e_map}}.}
 
 \item{json, svg}{\href{https://geojson.org/}{Geojson}, or SVG.}
 
@@ -47,7 +47,7 @@ from the UI (generally www folder).
 json <- jsonlite::read_json("https://echarts.apache.org/examples/data/asset/geo/USA.json")
 
 USArrests |>
-  tibble::rownames_to_column("states") |> 
+  tibble::rownames_to_column("states") |>
   e_charts(states) |>
   e_map_register("USA", json) |>
   e_map(Murder, map = "USA") |>

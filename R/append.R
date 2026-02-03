@@ -45,6 +45,7 @@
 #'   })
 #'
 #'   observeEvent(input$add, {
+#'
 #'     echarts4rProxy("plot") |>
 #'       e_append2_p(0, react(), x, y, z)
 #'   })
@@ -79,7 +80,7 @@ e_append1_p_ <- function(proxy, series_index = NULL, data, x, y, name = NULL) {
   }
 
   dlist <- data |>
-    dplyr::select(x, y,name) |>
+    dplyr::select(dplyr::all_of(c(x, y, name))) |>
     unname() |>
     apply(1, function(row){
       if(!is.null(name)){
@@ -122,8 +123,8 @@ e_append2_p_ <- function(proxy, series_index = NULL, data, x, y, z, scale = NULL
     stop("must pass echarts4rProxy object", call. = FALSE)
   }
 
-  data |>
-    dplyr::select(x, y, z) -> data
+  data <- data |>
+    dplyr::select(dplyr::all_of(c(x, y, z)))
 
   if (!is.null(scale)) {
     data[[4]] <- scale(data[[3]]) * symbol_size

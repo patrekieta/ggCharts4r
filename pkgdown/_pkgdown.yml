@@ -18,9 +18,9 @@ home:
     href: https://echarts.apache.org/
 
 reference:
-  - title: "Initialisation & Shiny"
+  - title: "Initialisation and Shiny"
     desc: "Initialise echarts and use in Shiny."
-    contents: 
+    contents:
       - e_charts
       - e_chart
       - echarts4rOutput
@@ -59,6 +59,12 @@ reference:
       - starts_with("e_funnel")
       - starts_with("e_heatmap")
       - starts_with("e_pictorial")
+      - starts_with("e_doughnut")
+      - starts_with("e_violin")
+      - starts_with("e_barRange")
+      - starts_with("e_contour")
+      - starts_with("e_lineRange")
+      - starts_with("e_stage")
   - title: "Geo"
     desc: "Geographical chart types"
     contents:
@@ -87,6 +93,8 @@ reference:
       - e_labels
       - e_animation
       - e_modularity
+      - e_zigzag
+      - e_jitter
   - title: "Toolbox"
     desc: "Provide a toolbox for your chart"
     contents:
@@ -137,11 +145,17 @@ reference:
     contents:
       - ends_with("_g")
       - e_draft
+      - e_annotations
   - title: "Connect"
     desc: "Connect charts and their interactions."
     contents:
       - connections
       - e_facet
+  - title: "Matrix"
+    desc: "Create custom matrix tables with charts"
+    contents:
+      - matches("matrix")
+      - e_geoFacet
   - title: "Timeline"
     desc: "Function to customise the chart timeline."
     contents:
@@ -228,6 +242,12 @@ navbar:
           href: articles/mark.html
         - text: "Themes"
           href: articles/themes.html
+        - text: "Annotations"
+          href: articles/annotations.html
+        - text: "Timeline"
+          href: articles/timeline.html
+        - text: "Matrix"
+          href: articles/matrix.html
     - text: "Shiny"
       menu:
         - text: 'Basics'
@@ -236,8 +256,7 @@ navbar:
           href: articles/boxes.html
         - text: 'Proxies'
           href: articles/proxies.html
-    - text: "Timeline"
-      href: articles/timeline.html
+    
   right:
     - icon: fab fa-github fa-lg
       href: https://github.com/JohnCoene/echarts4r

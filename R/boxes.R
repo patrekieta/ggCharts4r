@@ -60,6 +60,10 @@ echarts4rBox <- function(
   # override area
   if (type %in% c("area", "step")) type <- "line"
 
+  # Make sure x and y are strings
+  x <- toString(substitute(x))
+  y <- toString(substitute(y))
+
   # build expected data format
   data <- .build_data2(data, {{ x }}, {{ y }})
 
@@ -121,7 +125,7 @@ renderEcharts4rBox <- function(expr, env = parent.frame(), quoted = FALSE) {
   function() {
     val <- func()
 
-    path <- system.file("htmlwidgets/lib/echarts-4.8.0", package = "echarts4r")
+    path <- system.file("htmlwidgets/lib/echarts-6.0.0", package = "echarts4r")
 
     deps <- htmltools::htmlDependency(
       name = "countup",

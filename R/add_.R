@@ -20,7 +20,7 @@ e_bar_ <- function(
   }
 
   for (i in seq_along(e$x$data)) {
-    .build_data2(e$x$data[[i]], e$x$mapping$x, serie) -> vector
+    vector <- .build_data2(e$x$data[[i]], e$x$mapping$x, serie)
 
     if (!is.null(bind)) {
       vector <- .add_bind2(e, vector, bind, i = i)
@@ -38,7 +38,7 @@ e_bar_ <- function(
 
     if (coord_system == "polar") {
       e_serie$data <- e$x$data[[i]] |>
-        dplyr::select(serie) |>
+        dplyr::select(dplyr::all_of(serie)) |>
         unlist() |>
         unname() |>
         as.list()
@@ -123,9 +123,8 @@ e_line_ <- function(
   }
 
   for (i in seq_along(e$x$data)) {
-
     # build JSON data
-    .build_data2(e$x$data[[i]], e$x$mapping$x, serie) -> vector
+    vector <- .build_data2(e$x$data[[i]], e$x$mapping$x, serie)
 
     if (!is.null(bind)) {
       vector <- .add_bind2(e, vector, bind, i = i)
@@ -150,7 +149,7 @@ e_line_ <- function(
       }
     } else if (coord_system == "polar") {
       l$data <- e$x$data[[i]] |>
-        dplyr::select(serie) |>
+        dplyr::select(dplyr::all_of(serie)) |>
         unlist() |>
         unname() |>
         as.list()
@@ -228,7 +227,7 @@ e_area_ <- function(
   for (i in seq_along(e$x$data)) {
 
     # build JSON data
-    .build_data2(e$x$data[[i]], e$x$mapping$x, serie) -> vector
+    vector <- .build_data2(e$x$data[[i]], e$x$mapping$x, serie)
 
     if (!is.null(bind)) {
       vector <- .add_bind2(e, vector, bind, i = i)
@@ -251,7 +250,7 @@ e_area_ <- function(
       l$xAxisIndex <- x_index
     } else if (coord_system == "polar") {
       l$data <- e$x$data[[i]] |>
-        dplyr::select(serie) |>
+        dplyr::select(dplyr::all_of(serie)) |>
         unlist() |>
         unname() |>
         as.list()
@@ -333,7 +332,7 @@ e_step_ <- function(
   for (i in seq_along(e$x$data)) {
 
     # build JSON data
-    .build_data2(e$x$data[[i]], e$x$mapping$x, serie) -> vector
+    vector <- .build_data2(e$x$data[[i]], e$x$mapping$x, serie)
 
     if (!is.null(bind)) {
       vector <- .add_bind2(e, vector, bind, i = i)
@@ -356,7 +355,7 @@ e_step_ <- function(
       l$xAxisIndex <- x_index
     } else if (coord_system == "polar") {
       l$data <- e$x$data[[i]] |>
-        dplyr::select(serie) |>
+        dplyr::select(dplyr::all_of(serie)) |>
         unlist() |>
         unname() |>
         as.list()
@@ -441,8 +440,17 @@ e_scatter_ <- function(
   rm_y = TRUE,
   ...
 ) {
+  if (missing(e)) {
+    stop("must pass e", call. = FALSE)
+  }
+
   if (missing(serie)) {
     stop("must pass serie", call. = FALSE)
+  }
+
+  if(coord_system == "matrix"){
+    e <- e_scatter_matrix(e, z = serie, ...)
+    return(e)
   }
 
   for (i in seq_along(e$x$data)) {
@@ -477,7 +485,7 @@ e_scatter_ <- function(
 
     if (coord_system == "polar") {
       e.serie$data <- e$x$data[[i]] |>
-        dplyr::select(serie) |>
+        dplyr::select(dplyr::all_of(serie)) |>
         unlist() |>
         unname() |>
         as.list()
@@ -526,7 +534,7 @@ e_scatter_ <- function(
       e.serie <- append(e.serie, add_opts)
       e.serie <- append(e.serie, opts)
 
-      if (!coord_system %in% c("cartesian2d", "singleAxis", "polar")) {
+      if (!coord_system %in% c("cartesian2d", "singleAxis", "polar", "matrix")) {
         e <- .rm_axis(e, rm_x, "x")
         e <- .rm_axis(e, rm_y, "y")
       }
@@ -583,6 +591,10 @@ e_effect_scatter_ <- function(
   rm_y = TRUE,
   ...
 ) {
+  if (missing(e)) {
+    stop("must pass e", call. = FALSE)
+  }
+
   if (missing(serie)) {
     stop("must pass serie", call. = FALSE)
   }
@@ -610,7 +622,7 @@ e_effect_scatter_ <- function(
 
     if (coord_system == "polar") {
       e.serie$data <- e$x$data[[i]] |>
-        dplyr::select(serie) |>
+        dplyr::select(dplyr::all_of(serie)) |>
         unlist() |>
         unname() |>
         as.list()
@@ -655,7 +667,7 @@ e_effect_scatter_ <- function(
       e.serie <- append(e.serie, add_opts)
       e.serie <- append(e.serie, opts)
 
-      if (!coord_system %in% c("cartesian2d", "singleAxis", "polar")) {
+      if (!coord_system %in% c("cartesian2d", "singleAxis", "polar", "matrix")) {
         e <- .rm_axis(e, rm_x, "x")
         e <- .rm_axis(e, rm_y, "y")
       }
@@ -694,7 +706,11 @@ e_effect_scatter_ <- function(
 
 #' @rdname e_candle
 #' @export
-e_candle_ <- function(e, opening, closing, low, high, bind = NULL, name = NULL, legend = TRUE, ...) {
+e_candle_ <- function(e, opening, closing, low, high, bind = NULL, name = "candle", legend = TRUE, ...) {
+  if (missing(e)) {
+    stop("must pass e", call. = FALSE)
+  }
+
   if (missing(opening) || missing(closing) || missing(low) || missing(high)) {
     stop("missing inputs", call. = FALSE)
   }
@@ -742,7 +758,6 @@ e_candle_ <- function(e, opening, closing, low, high, bind = NULL, name = NULL, 
     if (isTRUE(legend)) {
       e$x$opts$baseOption$legend$data <- append(e$x$opts$baseOption$legend$data, list(name))
     }
-
     e$x$opts$baseOption$series <- append(e$x$opts$baseOption$series, list(add_opts))
   }
 
@@ -771,6 +786,9 @@ e_radar_ <- function(
   if (missing(serie)) {
     stop("must pass serie", call. = FALSE)
   }
+  if(e$x$tl)(
+    stop("timeline not supported")
+  )
 
   # remove axis
   e <- .rm_axis(e, rm_x, "x")
@@ -781,7 +799,7 @@ e_radar_ <- function(
   }
 
   # build JSON data
-  .get_data(e, serie) -> vector
+  vector <- .get_data(e, serie)
 
   series <- purrr::map(e$x$opts$series, "type") |>
     unlist()
@@ -794,7 +812,6 @@ e_radar_ <- function(
       ...
     )
 
-    # add indicators
     e <- .add_indicators(e, r.index, max, radar = radar)
 
     # add serie
@@ -816,6 +833,10 @@ e_radar_ <- function(
 #' @rdname e_funnel
 #' @export
 e_funnel_ <- function(e, values, labels, name = NULL, legend = TRUE, rm_x = TRUE, rm_y = TRUE, ...) {
+  if (missing(e)) {
+    stop("must pass e", call. = FALSE)
+  }
+
   if (missing(values) || missing(labels)) {
     stop("missing values or labels", call. = FALSE)
   }
@@ -873,9 +894,15 @@ e_funnel_ <- function(e, values, labels, name = NULL, legend = TRUE, rm_x = TRUE
 #' @rdname e_sankey
 #' @export
 e_sankey_ <- function(e, source, target, value, layout = "none", rm_x = TRUE, rm_y = TRUE, ...) {
+  if (missing(e)) {
+    stop("must pass e", call. = FALSE)
+  }
   if (missing(source) || missing(target) || missing(value)) {
     stop("missing source, target or values", call. = FALSE)
   }
+  if(e$x$tl)(
+    stop("timeline not supported")
+  )
 
   e <- .rm_axis(e, rm_x, "x")
   e <- .rm_axis(e, rm_y, "y")
@@ -912,8 +939,16 @@ e_heatmap_ <- function(
   calendar = NULL,
   ...
 ) {
+  if (missing(e)) {
+    stop("must pass e", call. = FALSE)
+  }
   if (missing(y)) {
     stop("must pass y", call. = FALSE)
+  }
+
+  if(coord_system == "matrix"){
+    e <- e |> e_heatmap_matrix(y, ...)
+    return(e)
   }
 
   for (i in seq_along(e$x$data)) {
@@ -948,6 +983,7 @@ e_heatmap_ <- function(
       e <- .rm_axis(e, rm_x, "x")
       e <- .rm_axis(e, rm_y, "y")
     } else {
+
       xdata <- unique(.get_data(e, e$x$mapping$x, i))
 
       if (length(xdata) == 1) {
@@ -996,20 +1032,27 @@ e_parallel_ <- function(e, ..., name = NULL, rm_x = TRUE, rm_y = TRUE, opts = li
   if (missing(e)) {
     stop("must pass e", call. = FALSE)
   }
+  if(e$x$tl)(
+    stop("timeline not supported")
+  )
 
   e <- .rm_axis(e, rm_x, "x")
   e <- .rm_axis(e, rm_y, "y")
 
-  e$x$data[[1]] |>
-    dplyr::select(...) -> df
+  data <- e$x$data[[1]][, c(...), drop = FALSE]
 
   # remove names
-  data <- df
-
+  df <- data
   row.names(data) <- NULL
   data <- unname(data)
 
   data <- apply(data, 1, as.list)
+
+  # remove white spaces (ex: in " 1")
+  data <- purrr::map(data, function(x) {
+    gsub(" ", "", x) |>
+      as.list()
+  })
 
   serie <- list(
     name = name,
@@ -1020,7 +1063,7 @@ e_parallel_ <- function(e, ..., name = NULL, rm_x = TRUE, rm_y = TRUE, opts = li
   serie <- append(serie, opts)
 
   para <- list()
-  for (i in 1:ncol(df)) {
+  for (i in seq_len(ncol(df))) {
     line <- list()
     line$dim <- i - 1
     line$name <- names(df)[i]
@@ -1039,7 +1082,7 @@ e_parallel_ <- function(e, ..., name = NULL, rm_x = TRUE, rm_y = TRUE, opts = li
 
 #' @rdname e_pie
 #' @export
-e_pie_ <- function(e, serie, name = NULL, legend = TRUE, rm_x = TRUE, rm_y = TRUE, ...) {
+e_pie_ <- function(e, serie, name = NULL, legend = TRUE,  coord_system = "", rm_x = TRUE, rm_y = TRUE, ...) {
   if (missing(e)) {
     stop("must pass e", call. = FALSE)
   }
@@ -1050,6 +1093,11 @@ e_pie_ <- function(e, serie, name = NULL, legend = TRUE, rm_x = TRUE, rm_y = TRU
 
   e <- .rm_axis(e, rm_x, "x")
   e <- .rm_axis(e, rm_y, "y")
+
+  if(coord_system == "matrix"){
+    e <- e |> e_pie_matrix(e$x$mapping$x, serie, legend, ...)
+    return(e)
+  }
 
   for (i in seq_along(e$x$data)) {
 
@@ -1106,7 +1154,9 @@ e_sunburst_ <- function(e, styles = NULL, names = NULL, levels = NULL, rm_x = TR
   if (missing(e)) {
     stop("must pass e", call. = FALSE)
   }
-
+  if(e$x$tl)(
+    stop("timeline not supported")
+  )
   e <- .rm_axis(e, rm_x, "x")
   e <- .rm_axis(e, rm_y, "y")
 
@@ -1129,6 +1179,9 @@ e_treemap_ <- function(e, styles = NULL, names = NULL, levels = NULL, rm_x = TRU
   if (missing(e)) {
     stop("must pass e", call. = FALSE)
   }
+  if(e$x$tl)(
+    stop("timeline not supported")
+  )
 
   e <- .rm_axis(e, rm_x, "x")
   e <- .rm_axis(e, rm_y, "y")
@@ -1156,6 +1209,9 @@ e_river_ <- function(e, serie, name = NULL, legend = TRUE, rm_x = TRUE, rm_y = T
   if (missing(serie)) {
     stop("must pass serie", call. = FALSE)
   }
+  if(e$x$tl)(
+    stop("timeline not supported")
+  )
 
   for (i in seq_along(e$x$data)) {
     nm <- .name_it(e, serie, name, i)
@@ -1164,7 +1220,6 @@ e_river_ <- function(e, serie, name = NULL, legend = TRUE, rm_x = TRUE, rm_y = T
       e$X <- e$x$opts$xAxis$data
     }
 
-    # build JSON data
     data <- .build_river(e, serie, nm, i)
 
     if (!length(e$x$opts$series)) {
@@ -1194,6 +1249,9 @@ e_river_ <- function(e, serie, name = NULL, legend = TRUE, rm_x = TRUE, rm_y = T
 #' @rdname e_boxplot
 #' @export
 e_boxplot_ <- function(e, serie, name = NULL, outliers = TRUE, ...) {
+  if (missing(e)) {
+    stop("must pass e", call. = FALSE)
+  }
   if (missing(serie)) {
     stop("must pass serie", call. = FALSE)
   }
@@ -1257,6 +1315,9 @@ e_tree_ <- function(e, rm_x = TRUE, rm_y = TRUE, ...) {
   if (missing(e)) {
     stop("must pass e", call. = FALSE)
   }
+  if(e$x$tl)(
+    stop("timeline not supported")
+  )
 
   # remove axis
   e <- .rm_axis(e, rm_x, "x")
@@ -1292,6 +1353,7 @@ e_lines_3d_ <- function(
   rm_y = TRUE,
   ...
 ) {
+
   if (missing(e)) {
     stop("must pass e", call. = FALSE)
   }
@@ -1300,15 +1362,16 @@ e_lines_3d_ <- function(
     stop("missing coordinates", call. = FALSE)
   }
 
-  if (missing(source_name)) {
+  # In proxy, these were turning into "NULL"
+  if (missing(source_name) || identical(source_name, "NULL")) {
     source_name <- NULL
   }
 
-  if (missing(target_name)) {
+  if (missing(target_name) || identical(target_name, "NULL")) {
     target_name <- NULL
   }
 
-  if (missing(value)) {
+  if (missing(value) || identical(value, "NULL"))  {
     value <- NULL
   }
 
@@ -1334,6 +1397,9 @@ e_lines_3d_ <- function(
     serie_opts <- list(
       type = "lines3D",
       coordinateSystem = coord_system,
+
+      # Adding this fixed: "Uncaught TypeError: Cannot read properties of undefined (reading 'getSource')"
+      data = list(),
       ...
     )
 
@@ -1363,7 +1429,7 @@ e_lines_3d_ <- function(
   }
 
   # add dependency
-  path <- system.file("htmlwidgets/lib/echarts-4.8.0", package = "echarts4r")
+  path <- system.file("htmlwidgets/lib/echarts-6.0.0", package = "echarts4r")
   dep <- htmltools::htmlDependency(
     name = "echarts-gl",
     version = "1.1.2",
@@ -1384,7 +1450,7 @@ e_line_3d_ <- function(e, y, z, name = NULL, coord_system = NULL, rm_x = TRUE, r
   }
 
   if (missing(y) || missing(z)) {
-    stop("missing coordinates", call. = FALSE)
+    stop("must pass y and z", call. = FALSE)
   }
 
   # remove axis
@@ -1461,7 +1527,7 @@ e_line_3d_ <- function(e, y, z, name = NULL, coord_system = NULL, rm_x = TRUE, r
   }
 
   # add dependency
-  path <- system.file("htmlwidgets/lib/echarts-4.8.0", package = "echarts4r")
+  path <- system.file("htmlwidgets/lib/echarts-6.0.0", package = "echarts4r")
   dep <- htmltools::htmlDependency(
     name = "echarts-gl",
     version = "1.1.2",
@@ -1485,6 +1551,10 @@ e_bar_3d_ <- function(e, y, z, bind = NULL, coord_system = "cartesian3D", name =
     stop("must pass y and z", call. = FALSE)
   }
 
+  if(is.null(e$x$mapping$x)){
+    stop("e$x$mapping$x is NULL")
+  }
+
   # remove axis
   e <- .rm_axis(e, rm_x, "x")
   e <- .rm_axis(e, rm_y, "y")
@@ -1494,13 +1564,13 @@ e_bar_3d_ <- function(e, y, z, bind = NULL, coord_system = "cartesian3D", name =
 
   for (i in seq_along(e$x$data)) {
     if (coord_system != "cartesian3D") {
-      data <- .build_data2(e$x$data[[i]], e$x$mapping$x, y, z)
+      data <- .build_data2(e$x$data[[i]], e$x$mapping$x, {{y}}, {{z}})
 
       if (!is.null(bind)) {
         data <- .add_bind2(e, data, bind, i = i)
       }
     } else {
-      data <- .build_cartesian3D(e, e$x$mapping$x, y, z, i = i)
+      data <- .build_cartesian3D(e, e$x$mapping$x, {{y}}, {{z}}, i = i)
     }
 
     if (!e$x$tl) {
@@ -1535,8 +1605,7 @@ e_bar_3d_ <- function(e, y, z, bind = NULL, coord_system = "cartesian3D", name =
     } else {
 
       # globe
-      if (coord_system == "cartesian3d") { # cartesian
-
+      if (coord_system == "cartesian3D") { # cartesian
         if (!length(e$x$opts$zAxis3D)) {
           e$x$opts$baseOption$zAxis3D <- list(list(show = TRUE))
         }
@@ -1551,7 +1620,6 @@ e_bar_3d_ <- function(e, y, z, bind = NULL, coord_system = "cartesian3D", name =
       e$x$opts$options[[i]]$series <- append(e$x$opts$options[[i]]$series, list(e_serie))
     }
   }
-
   if (e$x$tl) {
     serie_opts <- list(
       name = name,
@@ -1563,12 +1631,11 @@ e_bar_3d_ <- function(e, y, z, bind = NULL, coord_system = "cartesian3D", name =
     if (!is.null(name)) {
       e$x$opts$baseOption$legend$data <- append(e$x$opts$legend$data, name)
     }
-
     e$x$opts$baseOption$series <- append(e$x$opts$baseOption$series, list(serie_opts))
   }
 
   # add dependency
-  path <- system.file("htmlwidgets/lib/echarts-4.8.0", package = "echarts4r")
+  path <- system.file("htmlwidgets/lib/echarts-6.0.0", package = "echarts4r")
   dep <- htmltools::htmlDependency(
     name = "echarts-gl",
     version = "1.1.2",
@@ -1591,6 +1658,9 @@ e_surface_ <- function(e, y, z, bind = NULL, name = NULL, rm_x = TRUE, rm_y = TR
   if (missing(y) || missing(z)) {
     stop("must pass y and z", call. = FALSE)
   }
+  if(e$x$tl)(
+    stop("timeline not supported")
+  )
 
   # remove axis
   e <- .rm_axis(e, rm_x, "x")
@@ -1616,8 +1686,8 @@ e_surface_ <- function(e, y, z, bind = NULL, name = NULL, rm_x = TRUE, rm_y = TR
     row.names(e$x$data[[i]]) <- NULL
 
     data <- e$x$data[[i]] |>
-      dplyr::select(e$x$mapping$x, y, z)
-    
+      dplyr::select(dplyr::all_of(c(e$x$mapping$x, y, z)))
+
     data <- unname(data)
 
     data <- apply(data, 1, as.list)
@@ -1634,7 +1704,7 @@ e_surface_ <- function(e, y, z, bind = NULL, name = NULL, rm_x = TRUE, rm_y = TR
   }
 
   # add dependency
-  path <- system.file("htmlwidgets/lib/echarts-4.8.0", package = "echarts4r")
+  path <- system.file("htmlwidgets/lib/echarts-6.0.0", package = "echarts4r")
   dep <- htmltools::htmlDependency(
     name = "echarts-gl",
     version = "1.1.2",
@@ -1672,10 +1742,21 @@ e_lines_ <- function(
     stop("missing coordinates", call. = FALSE)
   }
 
+  if (missing(source_name) || identical(source_name, "NULL")) {
+    source_name <- NULL
+  }
+
+  if (missing(target_name) || identical(target_name, "NULL")) {
+    target_name <- NULL
+  }
+
+  if (missing(value) || identical(value, "NULL"))  {
+    value <- NULL
+  }
+
   # remove axis
   e <- .rm_axis(e, rm_x, "x")
   e <- .rm_axis(e, rm_y, "y")
-
 
   for (i in seq_along(e$x$data)) {
     data <- .map_lines(e, source_lon, source_lat, target_lon, target_lat, source_name, target_name, value, i)
@@ -1728,6 +1809,10 @@ e_scatter_3d_ <- function(
 
   if (missing(y) || missing(z)) {
     stop("must pass y and z", call. = FALSE)
+  }
+
+  if(is.null(e$x$mapping$x)){
+    stop("e$x$mapping$x is NULL")
   }
 
   # remove axis
@@ -1810,7 +1895,7 @@ e_scatter_3d_ <- function(
   }
 
   # add dependency
-  path <- system.file("htmlwidgets/lib/echarts-4.8.0", package = "echarts4r")
+  path <- system.file("htmlwidgets/lib/echarts-6.0.0", package = "echarts4r")
   dep <- htmltools::htmlDependency(
     name = "echarts-gl",
     version = "1.1.2",
@@ -1829,6 +1914,9 @@ e_flow_gl_ <- function(e, y, sx, sy, color = NULL, name = NULL, coord_system = N
   if (missing(e)) {
     stop("must pass e", call. = FALSE)
   }
+  if(e$x$tl)(
+    stop("timeline not supported")
+  )
 
   e$x$mainOpts$renderer <- "webgl"
 
@@ -1858,7 +1946,7 @@ e_flow_gl_ <- function(e, y, sx, sy, color = NULL, name = NULL, coord_system = N
   e$x$opts$series <- append(e$x$opts$series, list(serie))
 
   # add dependency
-  path <- system.file("htmlwidgets/lib/echarts-4.8.0", package = "echarts4r")
+  path <- system.file("htmlwidgets/lib/echarts-6.0.0", package = "echarts4r")
   dep <- htmltools::htmlDependency(
     name = "echarts-gl",
     version = "1.1.2",
@@ -1920,7 +2008,6 @@ e_scatter_gl_ <- function(e, y, z, name = NULL, coord_system = "geo", rm_x = TRU
           e$x$opts$baseOption$grid3D <- list(list(show = TRUE))
         }
       }
-
       e <- .set_axis_3D(e, "x", e$x$mapping$x, 0)
       e <- .set_axis_3D(e, "y", y, 0)
       e <- .set_axis_3D(e, "z", z, 0)
@@ -1942,7 +2029,7 @@ e_scatter_gl_ <- function(e, y, z, name = NULL, coord_system = "geo", rm_x = TRU
   }
 
   # add dependency
-  path <- system.file("htmlwidgets/lib/echarts-4.8.0", package = "echarts4r")
+  path <- system.file("htmlwidgets/lib/echarts-6.0.0", package = "echarts4r")
   dep <- htmltools::htmlDependency(
     name = "echarts-gl",
     version = "1.1.2",
@@ -2062,11 +2149,12 @@ e_histogram_ <- function(
     hist <- apply(unname(hist), 1, as.list)
 
     if (y_index != 0) {
-      e <- .set_y_axis(e, serie, y_index)
+      e <- .set_y_axis(e, serie, y_index, i)
     }
 
     if (x_index != 0) {
-      e <- .set_x_axis(e, x_index)
+
+      e <- .set_x_axis(e, x_index, i)
     }
 
     serie_data <- list(data = hist)
@@ -2243,11 +2331,13 @@ e_band_ <- function(
   if (missing(e)) {
     stop("must pass e", call. = FALSE)
   }
+  if(e$x$tl)(
+    stop("timeline not supported")
+  )
 
   if (missing(min) || missing(max)) {
     stop("must pass min and max", call. = FALSE)
   }
-
   args <- list(...)
 
   args$lineStyle <- list(
@@ -2278,6 +2368,7 @@ e_band_ <- function(
 
     # max
     e$x$data[[i]][, max] <- e$x$data[[i]][, max] - e$x$data[[i]][, min]
+
     max_opts_index <- max_opts
     max_opts_index$e <- e
     max_opts_index$stack <- stack
@@ -2308,10 +2399,13 @@ e_band2_ <- function(
     stop("must pass e", call. = FALSE)
   }
   if (missing(lower) || missing(upper)) {
-    stop("must pass lower, or upper", call. = FALSE)
+    stop("must pass lower and upper", call. = FALSE)
   }
   if (coord_system != "cartesian2d") {
     stop("only cartesian2d supported", call. = FALSE)
+  }
+  if(is.null(e$x$mapping$x)){
+    stop("e$x$mapping$x is NULL")
   }
 
   args <- list(...)
@@ -2368,7 +2462,7 @@ e_band2_ <- function(
   }
   if (isTRUE(e$x$tl)) {
     series_opts <- list(
-      name = name,
+      name = nm,
       type = "custom",
       yAxisIndex = y_index,
       xAxisIndex = x_index,
@@ -2380,14 +2474,14 @@ e_band2_ <- function(
     )
 
     if (isTRUE(legend)) {
-      e$x$opts$baseOption$legend$data <- append(e$x$opts$baseOption$legend$data, list(name))
+      e$x$opts$baseOption$legend$data <- append(e$x$opts$baseOption$legend$data, list(nm))
     }
     e$x$opts$baseOption$series <- append(
       e$x$opts$baseOption$series,
       list(series_opts)
     )
   }
-  path <- system.file("htmlwidgets/lib/echarts-4.8.0/custom", package = "echarts4r")
+  path <- system.file("htmlwidgets/lib/echarts-6.0.0/custom", package = "echarts4r")
   dep <- htmltools::htmlDependency(name = "echarts-renderers", version = "1.0.2", src = c(file = path), script = "renderers.js")
 
   e$dependencies <- append(e$dependencies, list(dep))
@@ -2482,16 +2576,17 @@ e_error_bar_ <- function(
     if (x_index != 0) {
       e <- .set_x_axis(e, x_index, i)
     }
-    if (coord_system == "polar") {
-      e_serie$data <- e$x$data[[i]] |>
-        dplyr::select(
-          lower,
-          upper
-        ) |>
-        unlist() |>
-        unname() |>
-        as.list()
-    }
+    # I dont think this should be supported
+    # if (coord_system == "polar") {
+    #   e_serie$data <- e$x$data[[i]] |>
+    #     dplyr::select(dplyr::all_of(c(
+    #       lower,
+    #       upper
+    #     ))) |>
+    #     unlist() |>
+    #     unname() |>
+    #     as.list()
+    # }
     nm <- .name_it(e, ser[[i]]$name, name, i)
 
     if (!e$x$tl) {
@@ -2548,9 +2643,41 @@ e_error_bar_ <- function(
       list(series_opts)
     )
   }
-  path <- system.file("htmlwidgets/lib/echarts-4.8.0/custom", package = "echarts4r")
+  path <- system.file("htmlwidgets/lib/echarts-6.0.0/custom", package = "echarts4r")
   dep <- htmltools::htmlDependency(name = "echarts-renderers", version = "1.0.2", src = c(file = path), script = "renderers.js")
 
   e$dependencies <- append(e$dependencies, list(dep))
   e |> e_x_axis(type = "category") # wont work with type 'value'
+}
+
+#' @rdname e_chord
+#' @export
+e_chord_ <- function(e, source, target, value, rm_x = TRUE, rm_y = TRUE, ...) {
+  if (missing(e)) {
+    stop("must pass e", call. = FALSE)
+  }
+  if (missing(source) || missing(target) || missing(value)) {
+    stop("missing source, target or values", call. = FALSE)
+  }
+  if(e$x$tl)(
+    stop("timeline not supported")
+  )
+  e <- .rm_axis(e, rm_x, "x")
+  e <- .rm_axis(e, rm_y, "y")
+
+  # build JSON data
+  nodes <- .build_sankey_nodes(e$x$data[[1]], source, target)
+
+  # build JSON data
+  links <- .build_sankey_edges(e$x$data[[1]], source, target, value)
+
+  serie <- list(
+    type = "chord",
+    data = nodes,
+    links = links,
+    ...
+  )
+
+  e$x$opts$series <- append(e$x$opts$series, list(serie))
+  e
 }
