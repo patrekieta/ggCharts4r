@@ -1,0 +1,256 @@
+<div id="main" role="main">
+
+# Timeline
+
+<div class="section level2">
+
+## Introduction
+
+`echarts4r` version `0.2.1` supports the timeline component!
+
+Let’s create some phoney data to demonstrate.
+
+<div id="cb1" class="sourceCode">
+
+``` r
+# fake data
+df <- data.frame(
+  year = c(
+    rep(2016, 25),
+    rep(2017, 25),
+    rep(2018, 25),
+    rep(2019, 25)
+  ),
+  x = rnorm(100),
+  y = rnorm(100),
+  grp = c(
+    rep("A", 50),
+    rep("B", 50)
+  )
+) 
+```
+
+</div>
+
+While on a “standard” chart you group data to distinguish between
+categories, to take advantage of the timeline component, you group them
+by *time steps* then set `timeline` to `TRUE`when initialise the chart.
+
+By changing a single argument (`timeline`) you go from:
+
+<div id="cb2" class="sourceCode">
+
+``` r
+df |>
+  group_by(year) |> 
+  e_charts(x) |> 
+  e_scatter(y, symbol_size = 5)
+```
+
+</div>
+
+<div id="htmlwidget-ac96cb3ee4656e2e9ec3"
+class="echarts4r html-widget html-fill-item"
+style="width:100%;height:500px;">
+
+</div>
+
+To an acutal timeline:
+
+<div id="cb3" class="sourceCode">
+
+``` r
+df |>
+  group_by(year) |> 
+  e_charts(x, timeline = TRUE) |> 
+  e_scatter(y, symbol_size = 5)
+```
+
+</div>
+
+<div id="htmlwidget-e5c8c404fe174e4c81bd"
+class="echarts4r html-widget html-fill-item"
+style="width:100%;height:500px;">
+
+</div>
+
+</div>
+
+<div class="section level2">
+
+## Supported types
+
+It works with the vast majority chart types, they are listed below and
+in the man page of `e_charts`.
+
+-   `e_bar`
+-   `e_line`
+-   `e_step`
+-   `e_area`
+-   `e_scatter`
+-   `e_effect_scatter`
+-   `e_candle`
+-   `e_heatmap`
+-   `e_pie`
+-   `e_line_3d`
+-   `e_lines_3d`
+-   `e_bar_3d`
+-   `e_lines`
+-   `e_scatter_3d`
+-   `e_scatter_gl`
+-   `e_histogram`
+-   `e_lm`
+-   `e_loess`
+-   `e_glm`
+-   `e_density`
+-   `e_pictorial`
+-   `e_boxplot`
+-   `e_map`
+-   `e_map_3d`
+-   `e_line_3d`
+-   `e_gauge`
+
+All options, i.e.: `e_tooltip` or `e_globe`, work with the timeline
+component.
+
+<div id="cb4" class="sourceCode">
+
+``` r
+df |> 
+  group_by(year) |> 
+  e_charts(x, timeline = TRUE) |> 
+  e_scatter(y) |> 
+  e_loess(y ~ x)
+```
+
+</div>
+
+<div id="htmlwidget-36aa3d2a04d42bbc2145"
+class="echarts4r html-widget html-fill-item"
+style="width:100%;height:500px;">
+
+</div>
+
+</div>
+
+<div class="section level2">
+
+## General Options
+
+You can pass options to the timeline with `e_timeline_opts`.
+
+<div id="cb5" class="sourceCode">
+
+``` r
+library(dplyr)
+library(echarts4r.maps)
+
+df <- USArrests
+
+# scale 0 to 1
+.scl <- function(x){
+    (x - min(x)) / (max(x) - min(x))
+}
+
+df |> 
+  tibble::rownames_to_column("State") |> 
+  mutate(
+    Rape = .scl(Rape),
+    Murder = .scl(Murder),
+    Assault = .scl(Assault)
+  ) |> 
+  select(State, Rape, Murder, Assault) |> 
+  group_by(State) |> 
+  tidyr::gather("Key",  "Value", Murder, Rape, Assault) |> 
+  group_by(Key) |> 
+  e_charts(State, timeline = TRUE) |> 
+  em_map("USA") |> 
+  e_map(Value, map = "USA") |> 
+  e_visual_map(min = 0, max = 1) |> 
+  e_timeline_opts(autoPlay = TRUE) |> 
+  e_timeline_serie(
+    title = list(
+      list(text = "Assault", subtext = "Percentage based on arrests"),
+      list(text = "Murder", subtext = "Percentage based on arrests"),
+      list(text = "Rape", subtext = "Percentage based on arrests")
+    )
+  )
+```
+
+</div>
+
+<div id="htmlwidget-febe03efa1a2d8d52a86"
+class="echarts4r html-widget html-fill-item"
+style="width:100%;height:500px;">
+
+</div>
+
+</div>
+
+<div class="section level2">
+
+## Time step options
+
+The function `e_timeline_opts` is used to set general options on the
+timeline, i.e.: auto-play like above. The full list of options is on the
+[official website](https://echarts.apache.org/en/option.html#timeline).
+
+However, we can also set options specific to each timestep with
+`e_timeline_serie`. The arguments to this function differ quite a bit
+from the rest of the package. As we have to assign options to multiple
+timesteps at once we need to pass vectors or lists of options, the
+length of the timesteps.
+
+<div id="cb6" class="sourceCode">
+
+``` r
+library(quantmod)
+
+getSymbols(c("GS", "GOOG")) # Goldman Sachs & Google
+#> [1] "GS"   "GOOG"
+GS <- as.data.frame(GS)
+GOOG <- as.data.frame(GOOG)
+
+colnames <- c("Open", "High", "Low", "Close", "Volume", "Adjusted")
+names(GS) <- colnames
+names(GOOG) <- colnames
+
+GS$sym <- "GS"
+GOOG$sym <- "GOOG"
+
+data <- bind_rows(GS, GOOG)
+data$date <- rep(row.names(GS), 2)
+
+data |> 
+  group_by(sym) |> 
+  e_charts(date, timeline = TRUE) |> 
+  e_candle(Open, Close, Low, High, legend = FALSE) |> 
+  e_y_axis(max = 1500) |> 
+  e_tooltip(trigger = "axis") |> 
+  e_timeline_opts(
+    axis_type = "category",
+    playInterval = 1500,
+    top = 5,
+    right = 50,
+    left = 200
+  ) |> 
+  e_datazoom() |> 
+  e_timeline_serie(
+    title = list(
+      list(text = "Goldman Sachs"),
+      list(text = "Google")
+    )
+  ) 
+```
+
+</div>
+
+<div id="htmlwidget-1fb4450895fe099f74a1"
+class="echarts4r html-widget html-fill-item"
+style="width:100%;height:500px;">
+
+</div>
+
+</div>
+
+</div>

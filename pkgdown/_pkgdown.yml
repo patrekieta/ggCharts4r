@@ -53,6 +53,7 @@ reference:
       - starts_with("e_liquid")
       - starts_with("e_tree")
       - starts_with("e_gauge")
+      - e_chord
       - starts_with("e_parallel")
       - starts_with("e_surface")
       - ends_with("_gl")
@@ -146,6 +147,14 @@ reference:
       - ends_with("_g")
       - e_draft
       - e_annotations
+  - title: "Datasets"
+    desc: "Example datasets included with the package."
+    contents:
+      - airports
+      - buildings_sample
+      - buildings_sample_json
+      - flights
+      - population
   - title: "Connect"
     desc: "Connect charts and their interactions."
     contents:
@@ -169,6 +178,7 @@ reference:
       - e_country_names
       - e_title
       - e_add
+      - e_insert_data
       - e_list
       - e_inspect
       - e_dims

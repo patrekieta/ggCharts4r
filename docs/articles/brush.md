@@ -1,0 +1,146 @@
+<div id="main" role="main">
+
+# Brush & Slide
+
+Leverage `echarts4r` build-in “crosstalk.”
+
+<div class="section level2">
+
+## Sliders
+
+Let’s do a fairly standard chart but add a slider on the x axis and one
+on the y axis.
+
+<div id="cb1" class="sourceCode">
+
+``` r
+mtcars |> 
+  e_charts(mpg) |> 
+  e_line(qsec) |> 
+  e_datazoom(x_index = 0, type = "slider") |> 
+  e_datazoom(y_index = 0, type = "slider") 
+```
+
+</div>
+
+<div id="htmlwidget-ac96cb3ee4656e2e9ec3"
+class="echarts4r html-widget html-fill-item"
+style="width:100%;height:500px;">
+
+</div>
+
+</div>
+
+<div class="section level2">
+
+## Zoom
+
+Let’s leverage `e_datazoom`.
+
+<div id="cb2" class="sourceCode">
+
+``` r
+USArrests |> 
+  e_charts(UrbanPop) |> 
+  e_line(Assault) |> 
+  e_area(Murder, y_index = 1, x_index = 1) |> 
+  e_y_axis(gridIndex = 1) |>
+  e_x_axis(gridIndex = 1) |> 
+  e_grid(height = "35%") |> 
+  e_grid(height = "35%", top = "50%") |> 
+  e_datazoom(x_index = c(0, 1))
+```
+
+</div>
+
+<div id="htmlwidget-e5c8c404fe174e4c81bd"
+class="echarts4r html-widget html-fill-item"
+style="width:100%;height:500px;">
+
+</div>
+
+</div>
+
+<div class="section level2">
+
+## Brush
+
+Let’s now look at `e_brush`.
+
+<div id="cb3" class="sourceCode">
+
+``` r
+quakes |> 
+  e_charts(long) |> 
+  e_geo(
+      boundingCoords = list(
+          c(190, -10),
+          c(180, -40)
+      )
+  ) |> 
+  e_scatter(lat, mag, stations, coord_system = "geo", name = "mag", rm_y = FALSE, rm_x = FALSE) |> # do not remove axis
+  e_data(quakes, depth) |> # use e_data to add data and/or change value on x axis
+  e_scatter(depth, mag, stations,  name = "mag & depth") |>  # plot scatter
+  e_grid(right = 40, top = 100, width = "30%") |> # adjust grid to avoid overlap
+  e_y_axis(name = "depth", min = 3.5) |> # add y axis name
+  e_x_axis(name = "magnitude") |> # add x axis name
+  e_legend(FALSE) |>  # hide legend
+  e_title("Built-in crosstalk", "Use the brush") |> # title
+  e_theme("westeros") |> # add a theme
+  e_brush() |> # add the brush
+  e_tooltip() # Add tooltips
+```
+
+</div>
+
+<div id="htmlwidget-36aa3d2a04d42bbc2145"
+class="echarts4r html-widget html-fill-item"
+style="width:100%;height:500px;">
+
+</div>
+
+The key to the above is 1) use the `bind` argument in both `e_scatter`
+to bind the data, in this case `stations`, think of it as a key, and 2)
+not removing the axis on the first `e_scatter`.
+
+Let’s combine both.
+
+<div id="cb4" class="sourceCode">
+
+``` r
+quakes |> 
+  e_charts(long) |> 
+  e_geo(
+      boundingCoords = list(
+          c(190, -10),
+          c(180, -40)
+      )
+  ) |> 
+  e_scatter(lat, mag, stations, coord_system = "geo", name = "mag", rm_y = FALSE, rm_x = FALSE) |> # do not remove axis
+  e_data(quakes, depth) |> # use e_data to add data and/or change value on x axis
+  e_scatter(depth, mag, stations, name = "mag & depth") |>  # plot scatter
+  e_grid(right = 40, top = 100, width = "30%") |> # adjust grid to avoid overlap
+  e_y_axis(name = "depth", min = 3.5) |> # add y axis name
+  e_x_axis(name = "magnitude") |> # add x axis name
+  e_legend(FALSE) |>  # hide legend
+  e_title("Built-in crosstalk", "Use the brush") |> # title
+  e_theme("chalk") |> # add a theme
+  e_brush() |> # add the brush
+  e_tooltip() |> 
+  e_datazoom(x_index = 0, type = "slider") |> 
+  e_datazoom(y_index = 0, type = "slider") 
+```
+
+</div>
+
+<div id="htmlwidget-febe03efa1a2d8d52a86"
+class="echarts4r html-widget html-fill-item"
+style="width:100%;height:500px;">
+
+</div>
+
+`e_brush` actually filters while `e_datazoom` only zooms on the data.
+
+</div>
+
+</div>

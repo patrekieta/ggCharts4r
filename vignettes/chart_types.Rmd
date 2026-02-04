@@ -22,9 +22,14 @@ e_common(
     font_family = "Raleway"
 )
 
-getSymbols("GS") #Goldman Sachs
-GS <- as.data.frame(GS)
-GS$date <- row.names(GS)
+# ---- Original (requires internet, breaks pkgdown builds) ----
+# getSymbols("GS") # Goldman Sachs
+# GS <- as.data.frame(GS)
+# GS$date <- row.names(GS)
+
+# ---- Replacement: read pre-saved data ----
+GS <- readRDS("data/GS.rds")
+
 ```
 
 This document include the _standard_ chart types _only_.

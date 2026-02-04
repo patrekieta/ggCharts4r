@@ -43,7 +43,10 @@ Suggests:
   data.tree,
   leaflet,
   tibble,
-  withr
+  withr,
+  quantmod,
+  data.tree,
+  leaflet
 Depends: R (>= 4.1.0)  
 RoxygenNote: 7.3.3
 Config/testthat/edition: 3
