@@ -1,0 +1,229 @@
+---
+title: "Annotations"
+author: "Jacci Ziebert"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Annotations}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library(echarts4r)
+```
+
+Annotations can be added to a variety of charts that use x, y coordinates. While Apache ECharts does not include a native annotation system, this is a custom function that creates annotations using SVG.
+
+## Styling Annotation Elements
+
+Here's an example of the style options. These take SVG attributes. Annotations can be removed by clicking the legend when `legend = TRUE`.
+
+```{r}
+iris |>
+  e_charts(Sepal.Length) |>
+  e_line(Sepal.Width) |>
+  e_annotations(
+    legend_color = "#928DE4",
+    default_color = "#928DE4",
+    annotations = list(
+      list(
+        id = 0,
+        x = 5,
+        y = 3,
+        text = '<b>HTML</b> <i>is supported!</i><br><span style="color:red">Red text</span>',
+        offsetX = -40,
+        offsetY = 40,
+        # Using the styles
+        textStyle = list(
+          "text-anchor" = "middle",
+          "font-size" = 14,
+          color = "green",
+          dy = -5
+        ),
+        rectStyle = list(
+          `stroke-dasharray` = c(35, 10),
+          `stroke-width` = 2,
+          # Shadow can be added!
+          shadow = list(
+            dx= 0,
+            dy= 2,
+            blur= 4,
+            color= '#000',
+            opacity= 0.3
+          ),
+          shape = list(width = 140, height = 50, r = 10)
+        ),
+        lineStyle = list(`stroke-width` = 6),
+        arrowStyle = list(size = 18)
+      ),
+        # No styles, will just show text
+       list(
+         id = 0,
+         x = 7,
+         y = 1,
+         text = 'No styles here!',
+         lineStyle = "none",
+         rectStyle = "none",
+         arrowStyle = "none"
+       ),
+       # left-aligned annotation
+       list(
+         id = 2,
+         x = 1,
+         y = 0.5,
+         text = "I'm left<br>aligned,<br>right?",
+         offsetX = 60,
+         offsetY = -40,
+         rectStyle = list(shape = list(height = 50)),
+         textStyle = list(
+           "text-anchor" = "start",
+           padding_trbl = list(0, 0, 12, 10)
+         )
+       )))
+```
+
+## Timeline
+
+```{r}
+iris |>
+  group_by(Species) |>
+  e_charts(Sepal.Length, timeline = TRUE) |>
+  e_line(Sepal.Width) |>
+  e_tooltip(trigger = "axis") |> 
+  e_legend(orient = "vertical", top = "left") |> 
+  e_annotations(
+    legend = FALSE,
+    annotations = list(
+      list(
+        id = 0,
+        x = 1,
+        y = 1,
+        offsetY = -50,
+        text = 'Same point!<br>Drag me!')))
+```
+
+## Facets and Matrix Coordinate System
+
+An annotation can be added to a specific facet with their own legend just by adding another `e_annotations()` and using `.facet` argument.
+```{r}
+group_size <- 20
+n_groups <- 13
+df <- data.frame("day" = rep(1:group_size, times=n_groups),
+                 "temperature" = runif(group_size * n_groups, 10, 40),
+                 "location" = rep(LETTERS[1:n_groups], each=group_size))
+
+shape <- list(width = 50, height = 20)
+
+df |>
+  group_by(location) |>
+  e_charts(day) |>
+  e_line(temperature) |>
+  e_facet(rows = 4, cols=4, legend_pos = "top", legend_space = 12) |>
+    e_annotations(
+        name = "Facet 1",
+        .facet = 1,
+        annotations = list(
+          list(
+            x = 10,
+            y = 30,
+            text = 'Facet 1',
+            rectStyle = list(shape = shape)
+            ))) |> 
+  e_annotations(
+    name = "Facet 12",
+    .facet = 12,
+    annotations = list(
+    list(
+      x = 10,
+      y = 30,
+      text = 'Facet 12',
+      rectStyle = list(shape = shape)
+      ))
+    )
+```
+
+Similar in a matrix. Just add the facet number. They use the same legend because the legend name is identical.
+```{r}
+df <- data.frame(group = rep(letters[1:6], each = 20),
+                 date = seq(from = as.Date("2025-01-01"),
+                            to = as.Date("2025-01-20"), by = "day"),
+                 temp = sample(c(10:20), size = 60, replace = TRUE))
+grid <- data.frame(name = unique(df$group), row = c(1:6), col = c(1:6))
+
+shape <- list(width = 30, height = 20)
+
+df |>
+  group_by(group) |>
+  e_chart(date) |>
+  e_line(temp, symbol = "none") |>
+  e_x_axis(splitNumber = 2) |>
+  e_y_axis(splitNumber = 2) |>
+  e_geoFacet(legend = FALSE,
+             grid = grid,
+             margin_trbl = c("t"="25%"),
+             left = "5%",
+             width = "90%") |>
+  e_title(text = "Group Temps") |>
+  e_annotations(.facet = 1,
+    annotations = list(list(
+      x = "2025-01-06", y = 3,
+      text = "A",
+      rectStyle = list(shape = shape)
+    ))
+  ) |>   e_annotations(.facet = 4,
+                       default_color = "orange",
+                       annotations = list(list(
+                         x = "2025-01-06", y = 10,
+                         text = "B",
+                         rectStyle = list(shape = shape)
+                       )))
+```
+
+## Shiny
+
+Dragging the annotation can be captured as to save the locations of the box.
+```{r, eval=FALSE}
+library(shiny)
+
+ui <- fluidPage(
+    echarts4rOutput("chart"),
+      verbatimTextOutput("positions")
+    )
+
+server <- function(input, output, session) {
+  output$chart <- renderEcharts4r({
+    mtcars |>
+      e_charts(mpg) |>
+      e_scatter(wt) |>
+      e_annotations(
+            annotations = list(
+              list(
+                id = 1,
+                x = 15,
+                y = 3,
+                text = 'An annotation'
+              ),
+              list(
+                id = 999,
+                x = 1,
+                y = 1,
+                text = 'Another'
+              )
+      ))
+  })
+
+  # Display positions when they drag
+  output$positions <- renderPrint({
+    input$chart_dragged_annotation
+  })
+}
+
+shinyApp(ui = ui, server = server)
+```
+
+

@@ -48,7 +48,9 @@ library(rmapshaper)
 Get India map data from gadm website, this command need network available, it will download the rds data to the current directory.
 
 ```{r}
-india_sp <- raster::getData('GADM', country = 'INDIA', level = 2) 
+india_sp <- geodata::gadm(country = "INDIA", level = 2)
+
+india_sp <- methods::as(india_sp, "Spatial")
 india_sp |> 
   head() |> 
   knitr::kable()
@@ -58,6 +60,7 @@ Note that you can then combine maps with `raster::union(map1, map2)` or with the
 
 ```{r}
 india_json <- geojsonio::geojson_list(india_sp)
+
 print(object.size(india_json), units = "Mb")
 ```
 
@@ -69,7 +72,7 @@ india_json_small <- geojsonio::geojson_list(india_small)
 print(object.size(india_json_small), units = "Mb") 
 ```
 
-The function `raster::getData` gives each polygon a `NAME_*` property (where `*` is the `level` specified) rather than just `name`. The tooltip will not display properly unless we use the `nameMap` to point to that property, by default echarts expects the `name` property.
+The function `geodata::gadm` gives each polygon a `NAME_*` property (where `*` is the `level` specified) rather than just `name`. The tooltip will not display properly unless we use the `nameMap` to point to that property, by default echarts expects the `name` property.
 
 Now we can use the `GeoJSON` with `e_map_register`.
 

@@ -1,0 +1,200 @@
+<div id="main" role="main">
+
+# web GL
+
+This document details webGL visualisations; webGL is ideal when you have
+large datasets to plot.
+
+<div class="section level2">
+
+## Surface
+
+<div id="cb1" class="sourceCode">
+
+``` r
+data("montereybay", package = "rayshader")
+
+bay <- as.data.frame(as.table(montereybay))
+bay$Var1 <- as.numeric(bay$Var1)
+bay$Var2 <- as.numeric(bay$Var2)
+
+bay |>  
+  e_charts(Var1, reorder = FALSE) |> 
+  e_surface(Var2, Freq) |> 
+  e_visual_map(Freq) 
+```
+
+</div>
+
+<div id="htmlwidget-ac96cb3ee4656e2e9ec3"
+class="echarts4r html-widget html-fill-item"
+style="width:100%;height:500px;">
+
+</div>
+
+</div>
+
+<div class="section level2">
+
+## Scatter
+
+<div id="cb2" class="sourceCode">
+
+``` r
+quakes |> 
+  e_charts(long) |> 
+  e_geo(
+    roam = TRUE,
+    boundingCoords = list(
+      c(185, - 10),
+      c(165, -40)
+     )
+  ) |> 
+  e_scatter_gl(lat, depth) |> 
+  e_visual_map()
+```
+
+</div>
+
+<div id="htmlwidget-e5c8c404fe174e4c81bd"
+class="echarts4r html-widget html-fill-item"
+style="width:100%;height:500px;">
+
+</div>
+
+</div>
+
+<div class="section level2">
+
+## Graph GL
+
+<div id="cb3" class="sourceCode">
+
+``` r
+#Use graphGL for larger networks
+nodes <- data.frame(
+  name = paste0(LETTERS, 1:300),
+  value = rnorm(300, 10, 2),
+  size = rnorm(300, 10, 2),
+  grp = rep(c("grp1", "grp2", "grp3"), 100),
+  stringsAsFactors = FALSE
+)
+
+edges <- data.frame(
+  source = sample(nodes$name, 400, replace = TRUE),
+  target = sample(nodes$name, 400, replace = TRUE),
+  stringsAsFactors = FALSE
+)
+
+e_charts() |> 
+  e_graph_gl() |> 
+  e_graph_nodes(nodes, name, value, size, grp) |> 
+  e_graph_edges(edges, source, target)
+```
+
+</div>
+
+<div id="htmlwidget-36aa3d2a04d42bbc2145"
+class="echarts4r html-widget html-fill-item"
+style="width:100%;height:500px;">
+
+</div>
+
+</div>
+
+<div class="section level2">
+
+## Flow GL
+
+Van der Pol oscillator by [David
+Granjon](https://twitter.com/divadnojnarg).
+
+<div id="cb4" class="sourceCode">
+
+``` r
+vectors <- expand.grid(x = -3:3, y = -3:3)
+mu <- 1
+vectors$sx <- vectors$y
+vectors$sy <- mu * (1 - vectors$x^2) * vectors$y - vectors$x
+vectors$color <- log10(runif(nrow(vectors), 1, 10))
+
+vectors |> 
+  e_charts(x) |> 
+  e_flow_gl(y, sx, sy, color) |> 
+  e_visual_map(
+    min = 0, max = 1, # log 10
+    dimension = 4, # x = 0, y = 1, sx = 3, sy = 4
+    show = FALSE, # hide
+    inRange = list(
+      color = c('#313695', '#4575b4', '#74add1', '#abd9e9', '#e0f3f8',
+                '#ffffbf', '#fee090', '#fdae61', '#f46d43', '#d73027', '#a50026')
+    )
+  ) |> 
+  e_x_axis(
+    splitLine = list(show = FALSE)
+  ) |> 
+  e_y_axis(
+    splitLine = list(show = FALSE)
+  ) 
+```
+
+</div>
+
+<div id="htmlwidget-febe03efa1a2d8d52a86"
+class="echarts4r html-widget html-fill-item"
+style="width:100%;height:500px;">
+
+</div>
+
+You can also plot it against different coordinates (`coord_system`).
+
+<div id="cb5" class="sourceCode">
+
+``` r
+latlong <- seq(-180, 180, by = 5)
+wind <- expand.grid(lng = latlong, lat = latlong)
+wind$slng <- rnorm(nrow(wind), 0, 200)
+wind$slat <- rnorm(nrow(wind), 0, 200)
+wind$color <- abs(wind$slat) - abs(wind$slng)
+
+trans <- list(opacity = 0.5) # transparency
+
+wind |> 
+  e_charts(lng, backgroundColor = '#333') |> 
+  e_geo(
+    itemStyle = list(
+      normal = list(
+        areaColor = "#323c48",
+        borderColor = "#111"
+      )
+    )
+  ) |> 
+  e_flow_gl(
+    lat, slng, slat, color, 
+    itemStyle = trans,
+    particleSize = 2
+  ) |> 
+  e_visual_map(
+    color, # range
+    dimension = 4, # lng = 0, lat = 1, slng = 2, slat = 3, color = 4
+    show = FALSE, # hide
+    inRange = list(
+      color = c('#313695', '#4575b4', '#74add1', '#abd9e9', '#e0f3f8', 
+                '#ffffbf', '#fee090', '#fdae61', '#f46d43', '#d73027', '#a50026')
+    )
+  ) |> 
+  e_x_axis(show = FALSE) |> 
+  e_y_axis(show = FALSE)
+```
+
+</div>
+
+<div id="htmlwidget-1fb4450895fe099f74a1"
+class="echarts4r html-widget html-fill-item"
+style="width:100%;height:500px;">
+
+</div>
+
+</div>
+
+</div>

@@ -21,7 +21,9 @@
 #'   \item{\code{e_bezier_curve_g} to draw a quadratic bezier curve or cubic bezier curve.}
 #' }
 #'
-#' @note Some elements, i.e.: \code{e_image_g} may not display in the RStudio browwser but will work fine in your browser, R markdown documents and Shiny applications.
+#' @note Some elements, i.e.: \code{e_image_g} may not display in the RStudio
+#'   browwser but will work fine in your browser, R markdown documents and Shiny
+#'   applications.
 #'
 #' @examples
 #' # may not work in RStudio viewer
@@ -40,7 +42,54 @@
 #'       opacity = .6
 #'     )
 #'   )
-#' @seealso \href{https://echarts.apache.org/en/option.html#graphic}{official documentation}
+#'
+#' anno_text <-
+#' 'xAxis represents miles per gallon, yAxis represents weight in tonnes.'
+#' # Position does change depending on window size.
+#' mtcars |>
+#'   e_charts(mpg) |>
+#'   e_line(wt) |>
+#'   e_group_g(
+#'     left = '18%',
+#'     top = '55%',
+#'     children = list(
+#'       # Background rectangle
+#'       list(
+#'         type = 'rect',
+#'         z = 100,
+#'         left = 'center',
+#'         top = 'middle',
+#'         shape = list(
+#'           width = 240,
+#'           height = 70
+#'         ),
+#'         style = list(
+#'           fill = '#fff',
+#'           stroke = '#555',
+#'           lineWidth = 1,
+#'           shadowBlur = 8,
+#'           shadowOffsetX = 3,
+#'           shadowOffsetY = 3,
+#'           shadowColor = 'rgba(0,0,0,0.2)'
+#'         )
+#'       ),
+#'       # Text element
+#'       list(
+#'         type = 'text',
+#'         z = 100,
+#'         left = 'center',
+#'         top = 'middle',
+#'         style = list(
+#'           fill = '#333',
+#'           width = 220,
+#'           overflow = 'break',
+#'           text = anno_text,
+#'           font = '14px Microsoft YaHei'
+#'         )
+#'       )
+#'     )
+#'   )
+#' #' @seealso \href{https://echarts.apache.org/en/option.html#graphic}{official documentation}
 #'
 #' @rdname graphic
 #' @export
@@ -193,6 +242,9 @@ e_bezier_curve_g <- function(e, ...) {
 #'   e_draft()
 #' @export
 e_draft <- function(e, text = "DRAFT", size = "120px", opacity = 0.4, color = "#d3d3d3") {
+  if (missing(e)) {
+    stop("must pass e", call. = FALSE)
+  }
   e |>
     e_text_g(
       left = "center",

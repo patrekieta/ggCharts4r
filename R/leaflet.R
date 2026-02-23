@@ -8,24 +8,12 @@
 #' @param options List of options, including \code{attribution} and \code{label}.
 #'
 #' @examples
-#' \dontrun{
-#' url <- paste0(
-#'   "https://echarts.apache.org/examples/",
-#'   "data-gl/asset/data/population.json"
-#' )
-#' data <- jsonlite::fromJSON(url)
-#' data <- as.data.frame(data)
-#' names(data) <- c("lon", "lat", "value")
-#' data$value <- log(data$value)
-#'
-#' data |>
+#' population |>
+#'   dplyr::filter(value > 8) |>
 #'   e_charts(lon) |>
 #'   e_leaflet() |>
-#'   e_leaflet_tile() |>
+#'   e_leaflet_tile(options = list(maxZoom = 3)) |>
 #'   e_scatter(lat, size = value, coord_system = "leaflet")
-#' }
-#'
-#' @note Will not render in the RStudio, open in browser.
 #'
 #' @rdname leaflet
 #' @export
@@ -41,8 +29,17 @@ e_leaflet <- function(e, roam = TRUE, ...) {
   e$x$opts$leaflet <- leaf
 
   # add dependency
-  path <- system.file("htmlwidgets/lib/echarts-4.8.0/plugins", package = "echarts4r")
+  path <- system.file("htmlwidgets/lib/echarts-6.0.0/plugins", package = "echarts4r")
+
   dep <- htmltools::htmlDependency(
+    name = "leaflet",
+    version = "1.9.4",
+    src = c(file = path),
+    stylesheet = "leaflet.css",
+    script = "leaflet.js"
+  )
+
+  dep2 <- htmltools::htmlDependency(
     name = "echarts-leaflet",
     version = "1.0.0",
     src = c(file = path),
@@ -50,7 +47,7 @@ e_leaflet <- function(e, roam = TRUE, ...) {
   )
 
   e$dependencies <- append(e$dependencies, htmlwidgets::getDependency("leaflet"))
-  e$dependencies <- append(e$dependencies, list(dep))
+  e$dependencies <- append(e$dependencies, list(dep, dep2))
 
   e
 }

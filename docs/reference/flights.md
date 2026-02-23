@@ -1,0 +1,74 @@
+<div id="main" class="col-md-9" role="main">
+
+# 2011 flight path data
+
+<div class="ref-description section level2">
+
+2011 flight path data
+
+</div>
+
+<div class="section level2">
+
+## Usage
+
+<div class="sourceCode">
+
+``` r
+flights
+```
+
+</div>
+
+</div>
+
+<div class="section level2">
+
+## Format
+
+A data frame with 178 rows and 8 variables:
+
+-   start_lat:
+
+    Numeric vector
+
+-   start_lon:
+
+    Numeric vector
+
+-   end_lat:
+
+    Numeric vector
+
+-   end_lon:
+
+    Numeric vector
+
+-   airline:
+
+    Character vector
+
+-   airport1:
+
+    Character vector
+
+-   airport2:
+
+    Character vector
+
+-   cnt:
+
+    Integer vector
+
+</div>
+
+<div class="section level2">
+
+## Source
+
+github repo
+<https://raw.githubusercontent.com/plotly/datasets/master/2011_february_aa_flight_paths.csv>
+
+</div>
+
+</div>

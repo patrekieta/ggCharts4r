@@ -12,8 +12,8 @@
 #' argument or pass a list specifying the label formatter.
 #' \code{label = list(formatter = "label")}. The former is more convenient
 #' but more limited, e.g.: you cannot specify the placement of the label.
-#' When the \code{e_mark} series function is used with \code{e_timeline} at the 
-#' same time, if the number of marks provided does not match the series, the 
+#' When the \code{e_mark} series function is used with \code{e_timeline} at the
+#' same time, if the number of marks provided does not match the series, the
 #' mark information will follow the setting of the previous frame.
 #'
 #' @examples
@@ -48,7 +48,7 @@
 #'     )
 #'   )
 #'
-#' # Serie options, since the mark of "virginica" is not set, the mark setting 
+#' # Serie options, since the mark of "virginica" is not set, the mark setting
 #' # of the previous frame is used
 #' iris |>
 #'   group_by(Species) |>
@@ -89,6 +89,8 @@ e_mark_point <- function(e, serie = NULL, data = NULL, ..., title = NULL, title_
 
   if (is.null(serie)) {
     index <- seq_along(if (e$x$tl) e$x$opts$options else e$x$opts$series)
+  } else if (e$x$tl){
+    index <- 1
   } else {
     index <- .get_index(e, serie)
   }
@@ -105,7 +107,7 @@ e_mark_point <- function(e, serie = NULL, data = NULL, ..., title = NULL, title_
     }
 
     if (e$x$tl) {
-      for(j in 1:length(e$x$opts$options[[i]]$series)){
+      for(j in seq_along(e$x$opts$options[[i]]$series)){
         if (is.null(e$x$opts$options[[i]]$series[[j]]$markPoint)) {
           e$x$opts$options[[i]]$series[[j]]$markPoint <- append(e$x$opts$options[[i]]$series[[j]]$markPoint, point)
         } else {
@@ -150,7 +152,7 @@ e_mark_line <- function(e, serie = NULL, data = NULL, ..., title = NULL, title_p
     }
 
     if (e$x$tl) {
-      for(j in 1:length(e$x$opts$options[[i]]$series)){
+      for(j in seq_along(e$x$opts$options[[i]]$series)){
         if (is.null(e$x$opts$options[[i]]$series[[j]]$markLine)) {
           e$x$opts$options[[i]]$series[[j]]$markLine <- append(e$x$opts$options[[i]]$series[[j]]$markLine, point)
         } else {
@@ -195,7 +197,7 @@ e_mark_area <- function(e, serie = NULL, data = NULL, ..., title = NULL, title_p
     }
 
     if (e$x$tl) {
-      for(j in 1:length(e$x$opts$options[[i]]$series)){
+      for(j in seq_along(e$x$opts$options[[i]]$series)){
         if (is.null(e$x$opts$options[[i]]$series[[j]]$markArea)) {
           e$x$opts$options[[i]]$series[[j]]$markArea <- append(e$x$opts$options[[i]]$series[[j]]$markArea, point)
         } else {
@@ -324,7 +326,6 @@ e_mark_p.echarts4r <- function(e, type = "point", serie_index = NULL, data = NUL
 #' @method e_mark_p echarts4rProxy
 #' @export
 e_mark_p.echarts4rProxy <- function(e, type = "point", serie_index = NULL, data = NULL, ...) {
-  if (missing(e)) stop("must pass e", call. = FALSE)
   e$chart <- e_mark_p_(e$chart, type, serie_index, data, ...)
   return(e)
 }
@@ -335,10 +336,11 @@ e_mark_p_ <- function(e, type, serie_index, data = NULL, ...) {
   if (missing(e)) stop("must pass e", call. = FALSE)
   if (missing(type)) stop("must pass type", call. = FALSE)
   mtype <- type
+
+  if (!mtype %in% c("point", "line", "area")) stop("type must be line,point or area", call. = FALSE)
   if (!startsWith(mtype, "mark")) {
     mtype <- switch(type, "point" = "markPoint", "line" = "markLine", "area" = "markArea")
   }
-  if (!startsWith(mtype, "mark")) stop("type must be line,point or area", call. = FALSE)
 
   index <- ifelse(is.null(serie_index), 1, as.numeric(serie_index))
 

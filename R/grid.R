@@ -50,7 +50,7 @@
 #' # plot all labels & rotate
 #' USArrests |>
 #'   head(10) |>
-#'   tibble::rownames_to_column(var = "State") |> 
+#'   tibble::rownames_to_column(var = "State") |>
 #'   e_charts(State) |>
 #'   e_area(Murder) |>
 #'   e_x_axis(axisLabel = list(interval = 0, rotate = 45)) # rotate
@@ -73,7 +73,7 @@ e_axis <- function(e, serie, axis = c("x", "y", "z"), index = 0, formatter = NUL
 #' @export
 e_axis_ <- function(e, serie = NULL, axis = c("x", "y", "z"), index = 0, formatter = NULL, margin = 0, ...) {
   if (missing(e)) {
-    stop("missing e", call. = FALSE)
+    stop("must pass e", call. = FALSE)
   }
 
   axis <- .r2axis(axis[1])
@@ -87,6 +87,14 @@ e_axis_ <- function(e, serie = NULL, axis = c("x", "y", "z"), index = 0, formatt
     dat <- .get_data(e, serie)
     if (inherits(dat, "numeric") || inherits(dat, "integer")) {
       rng <- range(dat)
+      # If min or max is provided, that will replace the min/max in the data
+      if(!is.null(attrs$min)){
+        rng[1] <- attrs$min
+      }
+      if(!is.null(attrs$max)){
+        rng[2] <- attrs$max
+      }
+
       attrs$min <- rng[1] - margin
       attrs$max <- rng[2] + margin
     }
@@ -138,7 +146,7 @@ e_axis_ <- function(e, serie = NULL, axis = c("x", "y", "z"), index = 0, formatt
 #' @export
 e_x_axis_ <- function(e, serie = NULL, index = 0, formatter = NULL, margin = 0, ...) {
   if (missing(e)) {
-    stop("missing e", call. = FALSE)
+    stop("must pass e", call. = FALSE)
   }
   e_axis_(e, serie, "x", index, formatter, margin = margin, ...)
 }
@@ -147,7 +155,7 @@ e_x_axis_ <- function(e, serie = NULL, index = 0, formatter = NULL, margin = 0, 
 #' @export
 e_y_axis_ <- function(e, serie = NULL, index = 0, formatter = NULL, margin = 0, ...) {
   if (missing(e)) {
-    stop("missing e", call. = FALSE)
+    stop("must pass e", call. = FALSE)
   }
   e_axis_(e = e, serie = serie, axis = "y", index = index, formatter, margin = margin, ...)
 }
@@ -156,7 +164,7 @@ e_y_axis_ <- function(e, serie = NULL, index = 0, formatter = NULL, margin = 0, 
 #' @export
 e_z_axis_ <- function(e, serie = NULL, index = 0, margin = 0, ...) {
   if (missing(e)) {
-    stop("missing e", call. = FALSE)
+    stop("must pass e", call. = FALSE)
   }
   e_axis_(e = e, serie = serie, axis = "z", index = index, margin = margin, ...)
 }
@@ -166,7 +174,7 @@ e_z_axis_ <- function(e, serie = NULL, index = 0, margin = 0, ...) {
 #' @export
 e_x_axis <- function(e, serie, index = 0, formatter = NULL, margin = 0, ...) {
   if (missing(e)) {
-    stop("missing e", call. = FALSE)
+    stop("must pass e", call. = FALSE)
   }
 
   if (missing(serie)) {
@@ -182,7 +190,7 @@ e_x_axis <- function(e, serie, index = 0, formatter = NULL, margin = 0, ...) {
 #' @export
 e_y_axis <- function(e, serie, index = 0, formatter = NULL, margin = 0, ...) {
   if (missing(e)) {
-    stop("missing e", call. = FALSE)
+    stop("must pass e", call. = FALSE)
   }
 
   if (missing(serie)) {
@@ -198,7 +206,7 @@ e_y_axis <- function(e, serie, index = 0, formatter = NULL, margin = 0, ...) {
 #' @export
 e_z_axis <- function(e, serie, index = 0, margin = 0, ...) {
   if (missing(e)) {
-    stop("missing e", call. = FALSE)
+    stop("must pass e", call. = FALSE)
   }
 
   if (missing(serie)) {
@@ -207,12 +215,13 @@ e_z_axis <- function(e, serie, index = 0, margin = 0, ...) {
     serie <- deparse(substitute(serie))
   }
 
-  e_axis(e = e, serie = serie, axis = "z", index = index, margin = margin, ...)
+  e_axis_(e = e, serie = serie, axis = "z", index = index, margin = margin, ...)
 }
 
 #' @rdname axis
 #' @export
 e_rm_axis <- function(e, axis = c("x", "y", "z")) {
+  match.arg(axis, c("x", "y", "z"))
   axis <- .r2axis(axis[1])
 
   e$x$opts[[axis]] <- NULL
@@ -270,7 +279,7 @@ e_axis_formatter <- function(
 #' @export
 e_grid <- function(e, index = NULL, ...) {
   if (missing(e)) {
-    stop("missing e", call. = FALSE)
+    stop("must pass e", call. = FALSE)
   }
 
   if (is.null(index)) {
@@ -320,7 +329,7 @@ e_grid <- function(e, index = NULL, ...) {
 #' @name radius_axis
 e_radius_axis <- function(e, serie, show = TRUE, ...) {
   if (missing(e)) {
-    stop("missing e", call. = FALSE)
+    stop("must pass e", call. = FALSE)
   }
 
   opts <- list(show = show, ...)
@@ -351,7 +360,7 @@ e_radius_axis <- function(e, serie, show = TRUE, ...) {
 #' @export
 e_radius_axis_ <- function(e, serie = NULL, show = TRUE, ...) {
   if (missing(e)) {
-    stop("missing e", call. = FALSE)
+    stop("must pass e", call. = FALSE)
   }
 
   opts <- list(show = show, ...)
@@ -365,7 +374,7 @@ e_radius_axis_ <- function(e, serie = NULL, show = TRUE, ...) {
       as.list()
   }
 
-  if (e$x$tl) {
+  if (!e$x$tl) {
     e$x$opts$radiusAxis <- opts
   } else {
     e$x$opts$baseOption$radiusAxis <- opts
@@ -407,7 +416,7 @@ e_radius_axis_ <- function(e, serie = NULL, show = TRUE, ...) {
 #' @export
 e_angle_axis <- function(e, serie, show = TRUE, ...) {
   if (missing(e)) {
-    stop("missing e", call. = FALSE)
+    stop("must pass e", call. = FALSE)
   }
 
   opts <- list(show = show, ...)
@@ -438,7 +447,7 @@ e_angle_axis <- function(e, serie, show = TRUE, ...) {
 #' @export
 e_angle_axis_ <- function(e, serie = NULL, show = TRUE, ...) {
   if (missing(e)) {
-    stop("missing e", call. = FALSE)
+    stop("must pass e", call. = FALSE)
   }
 
   opts <- list(show = show, ...)
@@ -484,7 +493,7 @@ e_angle_axis_ <- function(e, serie = NULL, show = TRUE, ...) {
 #' @export
 e_radar_opts <- function(e, index = 0, ...) {
   if (missing(e)) {
-    stop("missing e", call. = FALSE)
+    stop("must pass e", call. = FALSE)
   }
 
   r.index <- index + 1
@@ -499,11 +508,12 @@ e_radar_opts <- function(e, index = 0, ...) {
   # initiatlise if wrong index
   if (r.index > max) {
     r.index <- 1
-    if (!e$x$tl) {
-      e$x$opts$radar <- list(list())
-    } else {
-      e$x$opts$baseOption$radar <- list(list())
-    }
+    # This part seemed to break the plot
+    # if (!e$x$tl) {
+    #   e$x$opts$radar <- list(list())
+    # } else {
+    #   e$x$opts$baseOption$radar <- list(list())
+    # }
   }
 
   for (i in seq_along(attrs)) {
@@ -543,7 +553,7 @@ e_radar_opts <- function(e, index = 0, ...) {
 #' @export
 e_single_axis <- function(e, index = 0, ...) {
   if (missing(e)) {
-    stop("missing e", call. = FALSE)
+    stop("must pass e", call. = FALSE)
   }
 
   r.index <- index + 1
@@ -618,6 +628,9 @@ e_single_axis <- function(e, index = 0, ...) {
 #'   )
 #' @export
 e_axis_labels <- function(e, x = "", y = "") {
+  if (missing(e)) {
+    stop("must pass e", call. = FALSE)
+  }
   e |>
     e_x_axis(name = x) |>
     e_y_axis(name = y)
@@ -637,6 +650,9 @@ e_axis_labels <- function(e, x = "", y = "") {
 #'   e_hide_grid_lines()
 #' @export
 e_hide_grid_lines <- function(e, which = c("x", "y")) {
+  if (missing(e)) {
+    stop("must pass e", call. = FALSE)
+  }
   if ("x" %in% which) {
     if (!e$x$tl) {
       e$x$opts[["xAxis"]][[1]]$splitLine$show <- FALSE
@@ -674,6 +690,9 @@ e_hide_grid_lines <- function(e, which = c("x", "y")) {
 #'   e_axis_stagger()
 #' @export
 e_axis_stagger <- function(e) {
+  if (missing(e)) {
+    stop("must pass e", call. = FALSE)
+  }
   form <- "function(value, index){
     if(index % 2){
       return('\\n' + value)

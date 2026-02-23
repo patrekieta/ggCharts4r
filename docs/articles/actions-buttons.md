@@ -1,0 +1,205 @@
+<div id="main" role="main">
+
+# Actions & Buttons
+
+Since version `1.2.0` one can add actions and optionally tie them to
+buttons.
+
+<div class="section level2">
+
+## Actions
+
+For instance once can use the `e_zoom` action to zoom on the graph
+(requires `e_datazoom` initialised).
+
+<div id="cb1" class="sourceCode">
+
+``` r
+cars |> 
+  e_charts(dist) |> 
+  e_scatter(speed) |> 
+  e_datazoom() |> 
+  e_zoom(
+    dataZoomIndex = 0,
+    start = 20,
+    end = 40
+  ) 
+```
+
+</div>
+
+<div id="htmlwidget-ac96cb3ee4656e2e9ec3"
+class="echarts4r html-widget html-fill-item"
+style="width:100%;height:500px;">
+
+</div>
+
+</div>
+
+<div class="section level2">
+
+## Buttons
+
+Add a button to let the user trigger that action. We add a button with
+`e_button` and specify the id of our button in the action (`e_zoom`) so
+that the button knows which action to trigger.
+
+<div id="cb2" class="sourceCode">
+
+``` r
+cars |> 
+  e_charts(dist) |> 
+  e_scatter(speed) |> 
+  e_datazoom() |> 
+  e_zoom(
+    dataZoomIndex = 0,
+    start = 20,
+    end = 40,
+    btn = "BUTTON"
+  ) |> 
+  e_button(
+    id = "BUTTON", 
+    htmltools::tags$i(class = "fa fa-search"), # passed to the button
+    class = "btn btn-default",
+    "Zoom in"
+  )
+```
+
+</div>
+
+Zoom in
+
+<div id="htmlwidget-e5c8c404fe174e4c81bd"
+class="echarts4r html-widget html-fill-item"
+style="width:100%;height:500px;">
+
+</div>
+
+You can also create the button elsewhere on the document, as long as the
+`id` matches the `btn`.
+
+<div id="cb3" class="sourceCode">
+
+``` r
+value <- rnorm(10, 10, 2)
+
+nodes <- data.frame(
+  name = sample(LETTERS, 10),
+  value = value,
+  size = value,
+  grp = rep(c("grp1", "grp2"), 5),
+  stringsAsFactors = FALSE
+)
+
+edges <- data.frame(
+  source = sample(nodes$name, 20, replace = TRUE),
+  target = sample(nodes$name, 20, replace = TRUE),
+  stringsAsFactors = FALSE
+)
+
+e_charts() |> 
+  e_graph() |> 
+  e_graph_nodes(nodes, name, value, size, grp) |> 
+  e_graph_edges(edges, source, target) |> 
+  e_focus_adjacency(
+    seriesIndex = 0,
+    dataIndex = 4,
+    btn = "graphButton"
+  ) 
+```
+
+</div>
+
+<div id="htmlwidget-36aa3d2a04d42bbc2145"
+class="echarts4r html-widget html-fill-item"
+style="width:100%;height:500px;">
+
+</div>
+
+Then create the button with id matching our event (`graphButton`).
+
+<div id="cb4" class="sourceCode">
+
+``` r
+# create the button
+htmltools::tags$a(
+  id = "graphButton",
+  class = "btn btn-primary",
+  "Highlight node #4"
+)
+```
+
+</div>
+
+Highlight node \#4
+
+Note that this means that each button in the document must bear a
+*unique* id.
+
+You can also pass multiple buttons and change their positions.
+
+<div id="cb5" class="sourceCode">
+
+``` r
+iris |> 
+  group_by(Species) |> 
+  e_charts(Sepal.Length) |> 
+  e_line(Petal.Length) |> 
+  e_datazoom() |> 
+  e_highlight(series_name = "setosa", btn = "highlightButton") |> # highlight action
+  e_zoom( # zoom action
+    dataZoomIndex = 0,
+    startValue = 4,
+    endValue = 6,
+    btn = "zoomBtn"
+  ) |> 
+  e_button(
+    id = "zoomBtn",
+    position = "bottom",
+    class = "btn btn-primary",
+    "Zoom"
+  ) |> 
+  e_button(
+    "highlightButton",
+    position = "bottom",
+    class = "btn btn-default",
+    "highlight"
+  )
+```
+
+</div>
+
+<div id="htmlwidget-febe03efa1a2d8d52a86"
+class="echarts4r html-widget html-fill-item"
+style="width:100%;height:500px;">
+
+</div>
+
+Zoom
+
+highlight
+
+</div>
+
+<div class="section level2">
+
+## All
+
+Actions (all can be tied to buttons):
+
+-   `e_highlight` & `e_downplay` to highlight or downplay a serie.
+-   `e_showtip` & `e_hidetip` to show or hide the tooltip.
+-   `e_zoom` to zoom on a part of the graph.
+-   `e_visual_map_range` to select part of `e_visual_map`.
+-   `e_pie_select` & `e_pie_unselect` to select or unselect pie slices.
+-   `e_focus_adjacency` & `e_unfocus_adjacency` to focus or unfocus
+    nodes on a graph.
+-   `e_legend_scroll`, `e_legend_toggle_select`, `e_legend_unselect` &
+    `e_legend_select` to interact with the legend.
+-   `e_restore` to restore the chart.
+-   `e_map_select`, `e_map_unselect` & `e_map_toggle_select` to change
+    maps.
+
+</div>
+
+</div>

@@ -27,10 +27,10 @@
 <div class = "thumbnail" style = "text-align:center;">
 <div class = "caption">
 <i class = "fa fa-code-branch fa-4x" style = "color:#F72C5B;"></i>
-<h4>Version 5</h4>
-<p>Explore new features available on version 5 of echarts.js!</p>
+<h4>Version 6</h4>
+<p>Explore new features available on version 6 of echarts.js!</p>
 <br/>
-<a class = "btn btn-default" href = "articles/v5">Explore</a>
+<a class = "btn btn-default" href = "articles/v6">Explore</a>
 </div>
 </div>
 

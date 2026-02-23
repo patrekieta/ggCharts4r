@@ -238,6 +238,7 @@ e_charts.default <- function(
   return(widget)
 }
 
+# TODO is this being used? Remove it?
 #' @rdname init
 #' @method e_charts Node
 #' @export
@@ -360,7 +361,7 @@ e_charts_ <- function(
 
       x$mapping$include_x <- FALSE
       cl <- x$mapping$x_class
-      if (cl == "character" || cl == "factor") {
+      if (any(cl %in% c("character", "factor"))) {
         labs <- unique(data[[x$mapping$x]])
 
         if (length(labs) == 1) {
@@ -368,7 +369,7 @@ e_charts_ <- function(
         }
 
         x$opts$baseOption$xAxis <- list(list(data = labs, type = "category", boundaryGap = TRUE))
-      } else if (cl == "POSIXct" || cl == "POSIXlt" || cl == "Date") {
+      } else if (any(cl %in% c("POSIXct", "POSIXlt", "Date"))) {
         labs <- unique(data[[x$mapping$x]])
 
         if (length(labs) == 1) {
@@ -480,7 +481,7 @@ e_data <- function(e, data, x) {
 #'   this automatic readjustment, define a static \code{\link{e_grid}} like the
 #'   following: \code{'e_grid(e = current_chart, top = 0, left = 20, right = 0,
 #'   bottom = 20)'}.
-#'   
+#'
 #' @section Callbacks:
 #' \itemize{
 #'   \item{\code{id_brush}: returns data on brushed data points.}
@@ -493,6 +494,7 @@ e_data <- function(e, data, x) {
 #'   \item{\code{id_mouseover_data_value}: returns value of hovered data point.}
 #'   \item{\code{id_mouseover_row}: returns row o hovered data point.}
 #'   \item{\code{id_mouseover_serie}: returns name of serie of hovered data point.}
+#'   \item{\code{id_dragged_annotation}: returns data on dragged annotation.}
 #' }
 #'
 #' @section Proxies:
@@ -530,6 +532,11 @@ renderEcharts4r <- function(expr, env = parent.frame(), quoted = FALSE) {
 #' @rdname echarts4r-shiny
 #' @export
 echarts4rProxy <- function(id, data, x, timeline = FALSE, session = shiny::getDefaultReactiveDomain(), reorder = TRUE) {
+
+  if (missing(data) & timeline) {
+    stop("timeline expects data", call. = FALSE)
+  }
+
   if (missing(data)) {
     proxy <- list(id = id, session = session)
     class(proxy) <- "echarts4rProxy"
@@ -575,9 +582,6 @@ echarts4rProxy <- function(id, data, x, timeline = FALSE, session = shiny::getDe
   }
 
   if (isTRUE(timeline)) {
-    if (missing(data)) {
-      stop("timeline expects data", call. = FALSE)
-    }
 
     if (!dplyr::is_grouped_df(data)) {
       stop("must pass grouped data when timeline = TRUE", call. = FALSE)
@@ -609,7 +613,7 @@ echarts4rProxy <- function(id, data, x, timeline = FALSE, session = shiny::getDe
 
       x$mapping$include_x <- FALSE
       cl <- x$mapping$x_class
-      if (cl == "character" || cl == "factor") {
+      if (any(cl %in% c("character", "factor"))) {
         labs <- unique(data[[x$mapping$x]])
 
         if (length(labs) == 1) {
@@ -617,7 +621,7 @@ echarts4rProxy <- function(id, data, x, timeline = FALSE, session = shiny::getDe
         }
 
         x$opts$baseOption$xAxis <- list(list(data = labs, type = "category", boundaryGap = TRUE))
-      } else if (cl == "POSIXct" || cl == "POSIXlt" || cl == "Date") {
+      } else if (any(cl %in% c("POSIXct", "POSIXlt", "Date"))) {
         labs <- unique(data[[x$mapping$x]])
 
         if (length(labs) == 1) {

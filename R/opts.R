@@ -224,8 +224,7 @@ e_tooltip_item_formatter <- function(
         if (params.name == params.value[0]) {
             idx = 1;
         }
-        return params.value[0] + '<br>' +
-               params.marker + ' ' +
+        return params.marker + ' ' +
                params.seriesName + ': ' + fmt.format(parseFloat(params.value[idx]));
     }", locale, jsonlite::toJSON(opts, auto_unbox = TRUE)))
 
@@ -286,20 +285,14 @@ e_tooltip_pie_formatter <- function(
     currency = currency
   )
 
-  fmt <- htmlwidgets::JS(sprintf("function(params, ticket, callback) {
+  tip <- htmlwidgets::JS(sprintf("function(params, ticket, callback) {
     var fmt = new Intl.NumberFormat('%s', %s);
     return params.marker + ' ' +
            params.name + ': ' +
            fmt.format(params.value);
     }", locale, jsonlite::toJSON(opts, auto_unbox = TRUE)))
 
-  tip <- list(
-    formatter = fmt,
-    ...
-  )
-
-  tip <- structure(tip, class = "pie_formatter")
-
+  tip <- structure(tip, class = c("JS_EVAL", "item_formatter"))
   return(tip)
 }
 
@@ -379,12 +372,8 @@ e_legend <- function(e, show = TRUE, type = c("plain", "scroll"), icons = NULL, 
   if (missing(e)) {
     stop("must pass e", call. = FALSE)
   }
-
   if (!is.null(icons)) {
-    if (length(icons) == 1) {
-      e$x$opts$legend$icon <- icons
-      icons <- NULL
-    } else if (length(icons) < length(e$x$opts$legend$data)) {
+   if (length(icons) < length(e$x$opts$legend$data)) {
       stop(
         "invalid number of icons; ",
         length(icons),
@@ -392,9 +381,12 @@ e_legend <- function(e, show = TRUE, type = c("plain", "scroll"), icons = NULL, 
         length(e$x$opts$legend$data),
         " legend items."
       )
-    }
+   } else if (length(icons) == 1) {
+     e$x$opts$legend$icon <- icons
+     icons <- NULL
+   }
 
-    
+
     for (i in seq_along(e$x$opts$legend$data)) {
       e$x$opts$legend$data[[i]] <- list(name = e$x$opts$legend$data[[i]])
       e$x$opts$legend$data[[i]]$icon <- icons[[i]]
@@ -441,7 +433,7 @@ e_legend <- function(e, show = TRUE, type = c("plain", "scroll"), icons = NULL, 
 #'   e_datazoom(x_index = 0)
 #'
 #' mtcars |>
-#'   tibble::rownames_to_column("model") |> 
+#'   tibble::rownames_to_column("model") |>
 #'   e_charts(model) |>
 #'   e_line(qsec) |>
 #'   e_toolbox() |>
@@ -459,7 +451,7 @@ e_toolbox_feature <- function(e, feature, ...) {
   }
 
   if (missing(feature)) {
-    feature <- c("saveAsImage", "restore", "dataView", "dataView", "dataZoom", "magicType", "brush")
+    feature <- c("saveAsImage", "restore", "dataView", "dataZoom", "magicType", "brush")
   }
 
   options <- list(...)
@@ -500,6 +492,9 @@ e_toolbox_feature <- function(e, feature, ...) {
 #' @rdname toolbox
 #' @export
 e_toolbox <- function(e, ...) {
+  if (missing(e)) {
+    stop("must pass e", call. = FALSE)
+  }
   if (!e$x$tl) {
     e$x$opts$toolbox <- list(...)
   } else {
@@ -540,11 +535,11 @@ e_datazoom <- function(e, x_index = NULL, y_index = NULL, toolbox = TRUE, ...) {
   }
 
   if (!e$x$tl) {
-    if (!length(e$x$opts$dataZoom)) { # initiatilise if not existing
+    if (!length(e$x$opts$dataZoom)) { # initialize if not existing
       e$x$opts$dataZoom <- list()
     }
   } else {
-    if (!length(e$x$opts$baseOption$dataZoom)) { # initiatilise if not existing
+    if (!length(e$x$opts$baseOption$dataZoom)) { # initialize if not existing
       e$x$opts$baseOption$dataZoom <- list()
     }
   }
@@ -667,7 +662,7 @@ e_brush <- function(e, x_index = NULL, y_index = NULL, brush_link = "all", ...) 
 #' @export
 e_title <- function(e, text = NULL, subtext = NULL, link = NULL, sublink = NULL, ...) {
   if (missing(e)) {
-    stop("missing e", call. = FALSE)
+    stop("must pass e", call. = FALSE)
   }
 
   title <- list(...)
@@ -706,7 +701,7 @@ e_title <- function(e, text = NULL, subtext = NULL, link = NULL, sublink = NULL,
 #' @export
 e_polar <- function(e, show = TRUE, ...) {
   if (missing(e)) {
-    stop("missing e", call. = FALSE)
+    stop("must pass e", call. = FALSE)
   }
 
   if (!e$x$tl) {
@@ -735,7 +730,7 @@ e_polar <- function(e, show = TRUE, ...) {
 #' @export
 e_axis_pointer <- function(e, ...) {
   if (missing(e)) {
-    stop("missing e", call. = FALSE)
+    stop("must pass e", call. = FALSE)
   }
 
   if (!e$x$tl) {
@@ -782,6 +777,9 @@ e_animation <- function(
   easing.update = NULL,
   delay.update = NULL
 ) {
+  if (missing(e)) {
+    stop("must pass e", call. = FALSE)
+  }
   if (!e$x$tl) {
     e$x$opts$animation <- show
     e$x$opts$animationThreshold <- threshold
@@ -813,6 +811,9 @@ e_animation <- function(
 #'
 #' @export
 e_utc <- function(e) {
+  if (missing(e)) {
+    stop("must pass e", call. = FALSE)
+  }
   if (!e$x$tl) {
     e$x$opts$useUTC <- TRUE
   } else {
@@ -844,6 +845,9 @@ e_utc <- function(e) {
 #' e_flip_coords(plot) # flip
 #' @export
 e_flip_coords <- function(e) {
+  if (missing(e)) {
+    stop("must pass e", call. = FALSE)
+  }
   if (!e$x$tl) {
     n <- names(e$x$opts)
     n <- gsub("xAxis", "RENAME", n)
@@ -853,7 +857,7 @@ e_flip_coords <- function(e) {
     names(e$x$opts) <- n
 
     for (i in seq_along(e$x$opts$series)) {
-      for (j in 1:length(e$x$opts$series[[i]]$data)) {
+      for (j in seq_along(e$x$opts$series[[i]]$data)) {
 
         if(!is.null(names(e$x$opts$series[[i]]$data[[j]]))){
           try({
@@ -876,9 +880,9 @@ e_flip_coords <- function(e) {
 
     names(e$x$opts$baseOption) <- n
 
-    for (i in 1:length(e$x$opts$options)) {
-      for (j in 1:length(e$x$opts$options[[i]]$series)) {
-        for (k in 1:length(e$x$opts$options[[i]]$series[[j]]$data)) {
+    for (i in seq_along(e$x$opts$options)) {
+      for (j in seq_along(e$x$opts$options[[i]]$series)) {
+        for (k in seq_along(e$x$opts$options[[i]]$series[[j]]$data)) {
           try({
             vals <- e$x$opts$options[[i]]$series[[j]]$data[[k]]$value
             e$x$opts$options[[i]]$series[[j]]$data[[k]]$value <- rev(vals)
@@ -893,24 +897,28 @@ e_flip_coords <- function(e) {
 
 #' Text style
 #'
-#' Define global font style.
+#' Define global font style. Font styles may have to be specified in their
+#' respected element.
 #'
 #' @inheritParams e_bar
 #'
 #'
-#' @seealso \href{https://echarts.apache.org/en/option.html#textStyle}{official documentation}
+#' @seealso \href{https://echarts.apache.org/en/option.html#textStyle}{official
+#'   documentation}
 #'
 #' @examples
 #' cars |>
 #'   e_charts(dist) |>
 #'   e_scatter(speed) |>
-#'   e_labels() |>
+#'   e_labels(color = "#1E90FF") |>
 #'   e_text_style(
-#'     color = "blue",
 #'     fontStyle = "italic"
 #'   )
 #' @export
 e_text_style <- function(e, ...) {
+  if (missing(e)) {
+    stop("must pass e", call. = FALSE)
+  }
   if (!e$x$tl) {
     e$x$opts$textStyle <- list(...)
   } else {
@@ -973,6 +981,9 @@ e_text_style <- function(e, ...) {
 #' @name connections
 #' @export
 e_connect <- function(e, ids) {
+  if (missing(e)) {
+    stop("must pass e", call. = FALSE)
+  }
   if (missing(ids)) stop("missing ids", call. = FALSE)
   e$x$connect <- as.list(ids)
   return(e)
@@ -981,6 +992,9 @@ e_connect <- function(e, ids) {
 #' @rdname connections
 #' @export
 e_group <- function(e, group) {
+  if (missing(e)) {
+    stop("must pass e", call. = FALSE)
+  }
   if (missing(group)) {
     stop("missing group", call. = FALSE)
   }
@@ -993,6 +1007,9 @@ e_group <- function(e, group) {
 #' @rdname connections
 #' @export
 e_connect_group <- function(e, group) {
+  if (missing(e)) {
+    stop("must pass e", call. = FALSE)
+  }
   if (missing(group)) {
     stop("missing group", call. = FALSE)
   }
@@ -1005,6 +1022,9 @@ e_connect_group <- function(e, group) {
 #' @rdname connections
 #' @export
 e_disconnect_group <- function(e, group = NULL) {
+  if (missing(e)) {
+    stop("must pass e", call. = FALSE)
+  }
   e$x$groupDisconnect <- group
 
   e
@@ -1053,7 +1073,7 @@ e_arrange <- function(..., rows = NULL, cols = NULL, width = "xs", title = NULL)
         htmltools::tags$head(
           htmltools::tags$link(
             rel="stylesheet",
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css",
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css",
             integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr",
             crossorigin="anonymous"
           )
@@ -1072,66 +1092,85 @@ e_arrange <- function(..., rows = NULL, cols = NULL, width = "xs", title = NULL)
 }
 
 #' Dimensions
-#' 
+#'
 #' Sets the dimensions of the chart _internally._
 #' This will only affect the dimensions of the
 #' chart within its parent container.
-#' Use the `height` and `width` arguments of 
+#' Use the `height` and `width` arguments of
 #' [e_charts] if you want to change the dimensions
 #' of said parent (recommended).
-#' 
+#'
 #' @inheritParams e_bar
 #' @param height,width Dimensions in pixels, percentage or string.
-#' 
-#' @export 
+#'
+#' @export
 e_dims <- function(e, height = "auto", width = "auto") {
+  if (missing(e)) {
+    stop("must pass e", call. = FALSE)
+  }
   e$x$mainOpts$width <- width
   e$x$mainOpts$height <- height
   return(e)
 }
 
 #' Locale
-#' 
+#'
 #' Change the locale to auto-translate
 #' days of the week, etc.
-#' 
+#'
 #' @section Locales:
+#' - AR
 #' - CS
 #' - DE
 #' - EN
 #' - ES
+#' - FA
 #' - FI
 #' - FR
+#' - HU
+#' - IT
 #' - JA
+#' - KO
+#' - NL
+#' - PL
 #' - PT (brazil)
+#' - RO
+#' - RU
 #' - SI
+#' - SV
 #' - TH
+#' - TR
+#' - UK
+#' - VI
 #' - ZH
-#' 
+#'
 #' @examples
-#' # top right corner zoom is in 
+#' # top right corner zoom is in
 #' # French
-#' cars |> 
-#'  e_charts(speed) |> 
-#'  e_scatter(dist) |> 
-#'  e_datazoom() |> 
+#' cars |>
+#'  e_charts(speed) |>
+#'  e_scatter(dist) |>
+#'  e_datazoom() |>
 #'  e_locale("FR")
-#' 
+#'
 #' @inheritParams e_bar
 #' @param locale Locale to set to.
 #' @param path Path to the local file to use.
-#' 
+#'
 #' @details The "manual" function expects a file
 #' to use for translations.
 #' You can browse the `.js` files
 #' [here](https://github.com/apache/echarts/tree/master/i18n)
 #' to have an idea of what they should look like.
-#' 
+#'
 #' @name e_locale
-#' @export 
+#' @export
 e_locale <- function(e, locale){
+  if (missing(e)) {
+    stop("must pass e", call. = FALSE)
+  }
   if(missing(locale))
-    stop("Missing locale", call. = FALSE)
+    stop("missing locale", call. = FALSE)
 
   locale <- toupper(locale)
 
@@ -1139,7 +1178,7 @@ e_locale <- function(e, locale){
     dep <- htmltools::htmlDependency(
       name = sprintf("%s-echarts4r-locale", locale),
       version = utils::packageVersion("echarts4r"),
-      src = "htmlwidgets/lib/echarts-4.8.0/i18n",
+      src = "htmlwidgets/lib/echarts-6.0.0/i18n",
       package = "echarts4r",
       script = sprintf("lang%s.js", locale)
     )
@@ -1152,13 +1191,16 @@ e_locale <- function(e, locale){
 }
 
 #' @rdname e_locale
-#' @export 
+#' @export
 e_locale_manual <- function(e, locale, path){
+  if (missing(e)) {
+    stop("must pass e", call. = FALSE)
+  }
   if(missing(locale))
-    stop("Missing locale", call. = FALSE)
+    stop("missing locale", call. = FALSE)
 
   if(missing(path))
-    stop("Missing path", call. = FALSE)
+    stop("missing path", call. = FALSE)
 
   path <- normalizePath(path)
 
